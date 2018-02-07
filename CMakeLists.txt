@@ -1,0 +1,4 @@
+cmake_minimum_required (VERSION 2.6)
+project (wrist-controller-app)
+include_directories("${PROJECT_SOURCE_DIR}")
+add_executable(wrist-controller-app gesture_handlers.c gesture_handlers.h bluetooth_handlers.c bluetooth_handlers.h runner.c)
