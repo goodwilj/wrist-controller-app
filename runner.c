@@ -51,8 +51,8 @@ int main(void)
 
     /* Move the mouse diagonally, 5 units per axis */
     while (i--) {
-        emit(fd, EV_REL, REL_X, 5);
-        emit(fd, EV_REL, REL_Y, 5);
+        emit(fd, EV_REL, REL_X, -10);
+        emit(fd, EV_REL, REL_Y, 10);
         emit(fd, EV_SYN, SYN_REPORT, 0);
         usleep(15000);
     }
