@@ -11,13 +11,17 @@ A destop client to process data from the Wrist Controller device
 4. Start bluetooth client
 - `bluetoothctl`
 - `power on`
-5. Pair with device
+5. Trust device to cancel PIN
+- `trust 98:D3:31:FC:95:BD`
+6. Pair with device
 - `pair 98:D3:31:FC:95:BD`
-6. Exit from bluetooth
+7. Connect with device
+- `connect 98:D3:31:FC:95:BD`
+8. Exit from bluetooth
 - `exit`
-6. Create virtual terminal device
+9. Create virtual terminal device
 - `sudo rfcomm bind 0 98:D3:31:FC:95:BD`
-7. Read from /dev/rfcomm0
+10. Read from /dev/rfcomm0
 
 
 #### Developed for Pitt Senior Design 2018
