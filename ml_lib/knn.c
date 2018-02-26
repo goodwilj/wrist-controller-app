@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "knn.h"
+#include "data/csvParse.h"
 
 //primitive functions
 int test_function(int a, int b) {
@@ -41,8 +42,6 @@ Point euclidean_distance(RPoint r1, RPoint r2, int size){
     double squared_distance = 0.0;
     double distance = 0.0;
     for(int i = 0; i < size; i++){
-        printf("data1 : %f " , data1[i]);
-        printf("data2 : %f\n" , data2[i]);
         squared_distance = squared_distance + pow((data1[i] - data2[i]), 2);
     }
     distance = sqrt(squared_distance);
@@ -67,11 +66,9 @@ void record_training_data(double * s, int class) {
 
 //classifier
 int classify_knn(RPoint r){
-    RPoint trainingSet[2] = {
-            {1, 3.5, 2.8, 2.4},
-            {2, 4.0, 1.65, 2.5}
-    };
-    return classify_knn_internal(r,trainingSet, 2);
+    RPoint training_data[3];
+    extract_data(training_data, 3, 3);
+    return classify_knn_internal(r,training_data, 3);
 }
 //steps for classification
 //1. Using input point, create Points from each RPoint of the training set
@@ -79,11 +76,10 @@ int classify_knn(RPoint r){
 //3. Take first k Points from the sorted list
 //4. Analyze first k Points
 int classify_knn_internal(RPoint r, RPoint * training, int num){
-    const int numDataPoints = 3;
     Point points[num];
     Point * sorted_points;
     for(int i = 0; i < num; i++){
-        points[i] = euclidean_distance(training[i], r,numDataPoints);
+        points[i] = euclidean_distance(training[i], r, num);
     }
     printf("Points : (%d, %f) , (%d, %f)", points[0].class, points[0].distance, points[1].class, points[1].distance);
     sorted_points = sort(points);
