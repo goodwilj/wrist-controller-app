@@ -5,7 +5,7 @@
 #ifndef WRIST_CONTROLLER_APP_KNN_H
 #define WRIST_CONTROLLER_APP_KNN_H
 
-#endif //WRIST_CONTROLLER_APP_KNN_H
+
 
 int test_function(int, int);
 double * process_data_internal(double *, int );
@@ -26,3 +26,5 @@ int compare(Point, Point);
 Point * sort(Point *);
 int classify_knn(RPoint);
 int classify_knn_internal(RPoint, RPoint *, int);
+
+#endif //WRIST_CONTROLLER_APP_KNN_H
