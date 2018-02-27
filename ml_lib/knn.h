@@ -16,15 +16,17 @@ struct points{
 };
 struct raw_points{
     int class;
-    double data[3];
+    double data[4];
 };
 typedef struct points Point;
 typedef struct raw_points RPoint;
 Point manhattan_distance(RPoint, RPoint, int);
 Point euclidean_distance(RPoint, RPoint, int);
-int compare(Point, Point);
+int compare(const void *, const void *);
 Point * sort(Point *);
 int classify_knn(RPoint);
-int classify_knn_internal(RPoint, RPoint *, int);
+int classify_knn_internal(RPoint, RPoint *, int, int);
+void calculate_frequencies(Point *, int *, int);
+int determine_class(int *, int);
 
 #endif //WRIST_CONTROLLER_APP_KNN_H
