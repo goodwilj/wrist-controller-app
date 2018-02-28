@@ -6,6 +6,10 @@ struct file_descriptors{
     int max;
 };
 
+// Device Connection
+int connect_to_bluetooth();
+int read_from_bluetooth(int fd, char *buf);
+
 // Core Events
 struct file_descriptors create_device();
 int destroy_device();

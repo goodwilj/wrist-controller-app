@@ -28,21 +28,41 @@ void emit(int fd_uinput, int type, int code, int val)
     write(fd_uinput, &ie, sizeof(ie));
 }
 
+int connect_to_bluetooth(){
+
+    int fd = open("/dev/rfcomm0", O_RDONLY);
+    if(fd < 0 ){
+        printf("ERROR: could not connect to bluetooth\n");
+        return 0;
+    }
+
+    return fd;
+}
+
+int read_from_bluetooth(int fd, char *buf){
+
+    if(read(fd, buf, sizeof(buf)) < 0){
+        printf("ERROR: Reading from device\n");
+        return 0;
+    }
+
+    return 1;
+}
+
 struct file_descriptors create_device(){
 
     struct uinput_setup usetup;
     struct file_descriptors files;
 
-
     // open file descriptor to uinput
     if((fd_uinput = open("/dev/uinput", O_WRONLY | O_NONBLOCK)) < 0){
-        printf("ERROR: Opening uinput...\n");
+        printf("ERROR: Opening dev/uinput...\n");
         return files;
     }
 
     // open file description to input/mice
     if((fd_mice = open("/dev/input/mice", O_RDONLY | O_NONBLOCK)) < 0){
-        printf("ERROR: Opening uinput...\n");
+        printf("ERROR: Opening dev/input/mice...\n");
         return files;
     }
 
@@ -160,11 +180,13 @@ int get_mouse_coordinates(unsigned char *buf){
     read(fd_mice, buf, 3);
 }
 
-// absolute position won't work atm
+/*
+ * x-coords: 0 -> 960
+ * y-coords: 0 -> 540
+ */
 void center_cursor(){
 
-    emit(fd_uinput, EV_ABS, ABS_X, 10);
-    emit(fd_uinput, EV_ABS, ABS_Y, 10);
-    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    move_mouse(-1920, -1080, 0);
+    move_mouse(480, 270, 0);
 }
 
