@@ -11,8 +11,6 @@
 #include "gesture_handlers.h"
 #include "bluetooth_handlers.h"
 
-
-
 int main(void) {
 
     struct file_descriptors files;
@@ -57,6 +55,6 @@ int main(void) {
 
     printf("\nDestroying device...\n");
     destroy_device();
-
+    
     return 0;
 }
