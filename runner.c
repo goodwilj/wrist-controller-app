@@ -11,17 +11,7 @@
 #include "gesture_handlers.h"
 #include "bluetooth_handlers.h"
 
-int main(void) {
-
-    struct file_descriptors files;
-
-    printf("Creating device...\n");
-    files =  create_device();
-
-    printf("\nStarting routine...\n");
-
-    signed char x, y;
-    unsigned char data[3];
+int track_mouse(struct file_descriptors files, unsigned char *data){
 
     // set select fields
     fd_set s_rd, s_wr, s_ex;
@@ -31,7 +21,6 @@ int main(void) {
     FD_SET(files.rd, &s_rd);
     FD_SET(files.wr, &s_wr);
 
-    // begin loop
     while(1){
 
         if(select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) < 0)
@@ -41,17 +30,35 @@ int main(void) {
             printf("x = %d, x = %d\n", data[1], data[2]);
         }
     }
+}
 
-    get_mouse_coordinates(data);
+int process_input(){
 
+    int i = 100;
+    while(i--)
+        move_mouse(1,1, 10000);
+}
 
-    printf("x = %d, y = %d", data[1], data[2]);
-//
-//    int i = 100;
-//    while(i--)
-//        move_mouse(-1,1, 1000);
-//
-//    sleep(1);
+int main(void) {
+
+    struct file_descriptors files;
+    unsigned char data[3];
+
+    printf("Creating device...\n");
+    files =  create_device();
+    center_cursor();
+
+    pid_t id = fork();
+
+    // process to track mouse movement
+    if(id == 0) {
+        track_mouse(files, data);
+    }
+
+    // process to handle system calls
+    else {
+        process_input();
+    }
 
     printf("\nDestroying device...\n");
     destroy_device();
