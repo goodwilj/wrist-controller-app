@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "knn.h"
-#include "data/csvParse.h"
+#include "csvParse.h"
 
 //primitive functions
 int test_function(int a, int b) {
@@ -77,7 +77,7 @@ int classify_knn(RPoint r){
     int numTrainingPoints = 120;
     RPoint training_data[numTrainingPoints];
     int k = 17;
-    extract_data(training_data, numTrainingPoints, 4, "data/trainingData.csv");
+    extract_data(training_data, numTrainingPoints, 4, "../data/trainingData.csv");
     return classify_knn_internal(r,training_data, numTrainingPoints, k);
 }
 //steps for classification
