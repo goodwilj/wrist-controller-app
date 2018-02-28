@@ -7,44 +7,54 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
-#include <time.h>
+#include <math.h>
 #include "gesture_handlers.h"
 #include "bluetooth_handlers.h"
-#include "ml_lib/knn.h"
-#include "data/csvParse.h"
 
+int main(void) {
 
-int main(void)
-{
-    printf("Starting program...\n");
-    clock_t start = clock();
-    //scan_for_device();
-//    create_device();
-//    move_mouse(-5,5);
-//    mouse_right_click();
-//    destroy_device();
-    //printf("%d", test_function(8, 6));
-    //double test[5] = {1.3, 4.5, 8.23, 8.0, 7.0};
-    //record_training_data(test, 3);
-    //6.8,3.2,5.9,2.3 ---> answer : 3
-    //5.0,3.6,1.4,0.2 --> answer : 1
-    //5.6,2.9,3.6,1.3 --> answer: 2
-    RPoint r[30];
-    extract_data(r, 30, 4, "data/testData.csv");
-    int correct = 0;
-    int total = 0;
-    int prediction = 0;
-    for(int i = 0; i < 30; i++){
-        prediction = classify_knn(r[i]);
-        total++;
-        if(prediction == r[i].class){
-            correct++;
+    struct file_descriptors files;
+
+    printf("Creating device...\n");
+    files =  create_device();
+
+    printf("\nStarting routine...\n");
+
+    signed char x, y;
+    unsigned char data[3];
+
+    // set select fields
+    fd_set s_rd, s_wr, s_ex;
+    FD_ZERO(&s_rd);
+    FD_ZERO(&s_wr);
+    FD_ZERO(&s_ex);
+    FD_SET(files.rd, &s_rd);
+    FD_SET(files.wr, &s_wr);
+
+    // begin loop
+    while(1){
+
+        if(select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) < 0)
+            return 0;
+        else{
+            get_mouse_coordinates(data);
+            printf("x = %d, x = %d\n", data[1], data[2]);
         }
     }
-    double reliability = (double)correct/(double)total;
-    clock_t end = clock();
-    float seconds = (float)(end - start)/CLOCKS_PER_SEC;
-    printf("Time to complete : %fs\n", seconds);
-    printf("Percent Correct = %.1f%%", reliability*100);
+
+    get_mouse_coordinates(data);
+
+
+    printf("x = %d, y = %d", data[1], data[2]);
+//
+//    int i = 100;
+//    while(i--)
+//        move_mouse(-1,1, 1000);
+//
+//    sleep(1);
+
+    printf("\nDestroying device...\n");
+    destroy_device();
+    
     return 0;
 }

@@ -24,7 +24,6 @@ int scan_for_device()
         exit(1);
     }
 
-
     // allocate memory for device info
     len  = 8; // max wait time = len * 1.28
     max_rsp = 255; // max number of devices
