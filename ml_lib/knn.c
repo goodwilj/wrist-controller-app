@@ -6,17 +6,24 @@
 #include <stdio.h>
 #include <math.h>
 #include "knn.h"
-#include "data/csvParse.h"
+#include "csvParse.h"
 
 //primitive functions
 int test_function(int a, int b) {
     return a + b;
 }
-int compare(Point p1, Point p2){
-    if(p1.distance > p2.distance){
+int compare(const void *v1, const void *v2){
+    Point *p1 = v1;
+    Point *p2 = v2;
+    if(p1->distance > p2->distance){
         return 1;
     }
-    return 0;
+    else if(p1->distance < p2->distance){
+        return -1;
+    }
+    else{
+        return 0;
+    }
 }
 Point * sort(Point * list){
     return list;
@@ -42,6 +49,7 @@ Point euclidean_distance(RPoint r1, RPoint r2, int size){
     double squared_distance = 0.0;
     double distance = 0.0;
     for(int i = 0; i < size; i++){
+        //printf("data %f - %f", data1[i], data2[i]);
         squared_distance = squared_distance + pow((data1[i] - data2[i]), 2);
     }
     distance = sqrt(squared_distance);
@@ -66,23 +74,51 @@ void record_training_data(double * s, int class) {
 
 //classifier
 int classify_knn(RPoint r){
-    RPoint training_data[3];
-    extract_data(training_data, 3, 3);
-    return classify_knn_internal(r,training_data, 3);
+    int numTrainingPoints = 120;
+    RPoint training_data[numTrainingPoints];
+    int k = 17;
+    extract_data(training_data, numTrainingPoints, 4, "../data/trainingData.csv");
+    return classify_knn_internal(r,training_data, numTrainingPoints, k);
 }
 //steps for classification
 //1. Using input point, create Points from each RPoint of the training set
 //2. Sort Points
 //3. Take first k Points from the sorted list
 //4. Analyze first k Points
-int classify_knn_internal(RPoint r, RPoint * training, int num){
+int classify_knn_internal(RPoint r, RPoint * training, int num, int k){
     Point points[num];
+    int numClasses = 3;
+    int classes[4] = {0, 0, 0, 0};
+    const int size_struct_points = 16;
     Point * sorted_points;
     for(int i = 0; i < num; i++){
-        points[i] = euclidean_distance(training[i], r, num);
+        points[i] = euclidean_distance(training[i], r, 3);
     }
-    printf("Points : (%d, %f) , (%d, %f)", points[0].class, points[0].distance, points[1].class, points[1].distance);
-    sorted_points = sort(points);
-    return 0;
+    qsort(points, num, size_struct_points, compare);
+    for(int i = 0; i < k; i++) {
+        //printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
+    }
+    calculate_frequencies(points, classes, k);
+    int determination = determine_class(classes, numClasses);
+    printf("Class: %d\n", determination);
+
+    return determination;
+}
+void calculate_frequencies(Point * sorted_points, int * classes, int k){
+    for(int i = 0; i < k; i++){
+        classes[sorted_points[i].class]++;
+    }
+}
+int determine_class(int * classes, int num){
+    int count = 0;
+    int answer = 0;
+    for(int i = 0; i < num + 1; i++){
+        printf("Num of %ds = %d ", i, classes[i]);
+        if(classes[i] > count){
+            count = classes[i];
+            answer = i;
+        }
+    }
+    return answer;
 }
 

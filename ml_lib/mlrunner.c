@@ -1,3 +1,8 @@
+//
+// Created by nbabha on 2/27/18.
+//
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <linux/uinput.h>
@@ -8,10 +13,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <time.h>
-#include "gesture_handlers.h"
-#include "bluetooth_handlers.h"
-#include "ml_lib/knn.h"
-#include "data/csvParse.h"
+#include "knn.h"
+#include "csvParse.h"
 
 
 int main(void)
@@ -30,7 +33,7 @@ int main(void)
     //5.0,3.6,1.4,0.2 --> answer : 1
     //5.6,2.9,3.6,1.3 --> answer: 2
     RPoint r[30];
-    extract_data(r, 30, 4, "data/testData.csv");
+    extract_data(r, 30, 4, "../data/testData.csv");
     int correct = 0;
     int total = 0;
     int prediction = 0;
