@@ -10,11 +10,14 @@
 #include <fcntl.h>
 #include <string.h>
 
-int fd;
+int fd_uinput;
+int fd_mice;
+int max_fd;
 
-void emit(int fd, int type, int code, int val)
+void emit(int fd_uinput, int type, int code, int val)
 {
     struct input_event ie;
+    struct file_descriptors files;
 
     ie.type = type;
     ie.code = code;
@@ -22,28 +25,49 @@ void emit(int fd, int type, int code, int val)
     ie.time.tv_sec = 0;
     ie.time.tv_usec = 0;
 
-    write(fd, &ie, sizeof(ie));
+    write(fd_uinput, &ie, sizeof(ie));
 }
 
-int create_device(){
+struct file_descriptors create_device(){
 
     struct uinput_setup usetup;
-    if((fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK)) < 0)
-        return -EINVAL;
+    struct file_descriptors files;
+
+
+    // open file descriptor to uinput
+    if((fd_uinput = open("/dev/uinput", O_WRONLY | O_NONBLOCK)) < 0){
+        printf("ERROR: Opening uinput...\n");
+        return files;
+    }
+
+    // open file description to input/mice
+    if((fd_mice = open("/dev/input/mice", O_RDONLY | O_NONBLOCK)) < 0){
+        printf("ERROR: Opening uinput...\n");
+        return files;
+    }
+
+    if(fd_uinput > fd_mice)
+        max_fd = fd_uinput;
+    else
+        max_fd = fd_mice;
 
     // enable mouse buttons and relative events
-    ioctl(fd, UI_SET_EVBIT, EV_KEY);
-    ioctl(fd, UI_SET_KEYBIT, BTN_LEFT);
-    ioctl(fd, UI_SET_KEYBIT, BTN_RIGHT);
-    ioctl(fd, UI_SET_KEYBIT, KEY_C);
-    ioctl(fd, UI_SET_KEYBIT, KEY_P);
-    ioctl(fd, UI_SET_KEYBIT, KEY_RIGHTCTRL);
-    ioctl(fd, UI_SET_KEYBIT, KEY_RIGHTALT);
-    ioctl(fd, UI_SET_KEYBIT, KEY_FN_F4);
+    ioctl(fd_uinput, UI_SET_EVBIT, EV_KEY);
+    ioctl(fd_uinput, UI_SET_KEYBIT, BTN_LEFT);
+    ioctl(fd_uinput, UI_SET_KEYBIT, BTN_RIGHT);
+    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_C);
+    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_P);
+    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_RIGHTCTRL);
+    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_RIGHTALT);
+    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_FN_F4);
 
-    ioctl(fd, UI_SET_EVBIT, EV_REL);
-    ioctl(fd, UI_SET_RELBIT, REL_X);
-    ioctl(fd, UI_SET_RELBIT, REL_Y);
+    ioctl(fd_uinput, UI_SET_EVBIT, EV_REL);
+    ioctl(fd_uinput, UI_SET_RELBIT, REL_X);
+    ioctl(fd_uinput, UI_SET_RELBIT, REL_Y);
+
+//    ioctl(fd_uinput, UI_SET_EVBIT, EV_ABS);
+    ioctl(fd_uinput, UI_SET_ABSBIT, ABS_X);
+    ioctl(fd_uinput, UI_SET_ABSBIT, ABS_Y);
 
     memset(&usetup, 0, sizeof(usetup));
     usetup.id.bustype = BUS_BLUETOOTH;
@@ -51,83 +75,96 @@ int create_device(){
     usetup.id.product = 0x0001;
     strcpy(usetup.name, "Wristband Device");
 
-    ioctl(fd, UI_DEV_SETUP, &usetup);
-    ioctl(fd, UI_DEV_CREATE);
+    ioctl(fd_uinput, UI_DEV_SETUP, &usetup);
+    ioctl(fd_uinput, UI_DEV_CREATE);
 
     sleep(1);
-    return 1;
+
+    files.rd = fd_mice;
+    files.wr = fd_uinput;
+    files.max = max_fd;
+
+    return files;
 }
 
 int destroy_device(){
-    ioctl(fd, UI_DEV_DESTROY);
-    close(fd);
+    ioctl(fd_uinput, UI_DEV_DESTROY);
+    close(fd_uinput);
 }
 
 void mouse_left_click(){
-    emit(fd, EV_KEY, BTN_LEFT, 1);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
-    emit(fd, EV_KEY, BTN_LEFT, 0);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, BTN_LEFT, 1);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, BTN_LEFT, 0);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
 void mouse_right_click(){
-    emit(fd, EV_KEY, BTN_RIGHT, 1);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
-    emit(fd, EV_KEY, BTN_RIGHT, 0);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, BTN_RIGHT, 1);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, BTN_RIGHT, 0);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
 void mouse_hold(){
-    emit(fd, EV_KEY, BTN_LEFT, 1);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, BTN_LEFT, 1);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
 void mouse_release(){
-    emit(fd, EV_KEY, BTN_LEFT, 0);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, BTN_LEFT, 0);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
 void copy(){
-    emit(fd, EV_KEY, KEY_C, 0);
-    emit(fd, EV_KEY, KEY_RIGHTCTRL, 0);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
-    emit(fd, EV_KEY, KEY_C, 1);
-    emit(fd, EV_KEY, KEY_RIGHTCTRL, 1);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, KEY_C, 0);
+    emit(fd_uinput, EV_KEY, KEY_RIGHTCTRL, 0);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, KEY_C, 1);
+    emit(fd_uinput, EV_KEY, KEY_RIGHTCTRL, 1);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
 void paste(){
-    emit(fd, EV_KEY, KEY_P, 0);
-    emit(fd, EV_KEY, KEY_RIGHTCTRL, 0);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
-    emit(fd, EV_KEY, KEY_P, 1);
-    emit(fd, EV_KEY, KEY_RIGHTCTRL, 1);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, KEY_P, 0);
+    emit(fd_uinput, EV_KEY, KEY_RIGHTCTRL, 0);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, KEY_P, 1);
+    emit(fd_uinput, EV_KEY, KEY_RIGHTCTRL, 1);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
 void close_window(){
-    emit(fd, EV_KEY, KEY_RIGHTALT, 0);
-    emit(fd, EV_KEY, KEY_FN_F4, 0);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
-    emit(fd, EV_KEY, KEY_RIGHTALT, 1);
-    emit(fd, EV_KEY, KEY_FN_F4, 1);
-    emit(fd, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 0);
+    emit(fd_uinput, EV_KEY, KEY_FN_F4, 0);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 1);
+    emit(fd_uinput, EV_KEY, KEY_FN_F4, 1);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
-void move_mouse(int x, int y){
+void move_mouse(int x, int y, int ms){
 
     // TODO: need to calculate the speed the mouse moves from the accelerometer data
 
-    int i = 100;
-    while(i--){
-        emit(fd, EV_REL, REL_X, x);
-        emit(fd, EV_REL, REL_Y, y);
-        emit(fd, EV_SYN, SYN_REPORT, 0);
-        usleep(15000); // temporary
-    }
+    emit(fd_uinput, EV_REL, REL_X, x);
+    emit(fd_uinput, EV_REL, REL_Y, y);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    usleep(ms); // temporary
 }
 
+// data[1] = x-coord
+// data[2] = y-coord
+int get_mouse_coordinates(unsigned char *buf){
+
+    read(fd_mice, buf, 3);
+}
+
+// absolute position won't work atm
 void center_cursor(){
 
+    emit(fd_uinput, EV_ABS, ABS_X, 10);
+    emit(fd_uinput, EV_ABS, ABS_Y, 10);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
