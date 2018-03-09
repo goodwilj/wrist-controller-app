@@ -1,6 +1,7 @@
 // Structs
 struct file_descriptors{
-    int rd;
+    int rd_sys;
+    int rd_bt;
     int wr;
     int ex;
     int max;

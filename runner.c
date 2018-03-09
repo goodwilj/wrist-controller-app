@@ -8,45 +8,64 @@
 #include <fcntl.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include "gesture_handlers.h"
 #include "bluetooth_handlers.h"
 
 int track_mouse(struct file_descriptors files, unsigned char *data){
 
-    // set select fields
+    // set select fields for system input
     fd_set s_rd, s_wr, s_ex;
     FD_ZERO(&s_rd);
     FD_ZERO(&s_wr);
     FD_ZERO(&s_ex);
-    FD_SET(files.rd, &s_rd);
+    FD_SET(files.rd_sys, &s_rd);
+    FD_SET(files.rd_bt, &s_rd);
     FD_SET(files.wr, &s_wr);
 
     while(1){
 
-        if(select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) < 0)
-            return 0;
-        else{
+        if(select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) >= 0) {
             get_mouse_coordinates(data);
-            printf("x = %d, x = %d\n", data[1], data[2]);
         }
     }
 }
 
-int process_input(){
+int process_input(struct file_descriptors files, char *buf) {
 
-    int i = 100;
-    while(i--)
-        move_mouse(1,1, 10000);
+    // set select fields for bluetooth
+    fd_set s_rd, s_wr, s_ex;
+    FD_ZERO(&s_rd);
+    FD_ZERO(&s_wr);
+    FD_ZERO(&s_ex);
+    FD_SET(files.rd_bt, &s_rd);
+    FD_SET(files.wr, &s_wr);
+
+    struct timespec time;
+    time.tv_sec = 0;
+    time.tv_nsec = 10000000;
+
+    while (1) {
+
+        if (select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) >= 0) {
+            memset(buf, 0, 1000);
+            read_from_bluetooth(files.rd_bt, buf);
+            printf("%s", buf);
+            nanosleep(&time, NULL);
+        }
+    }
 }
 
 int main(void) {
 
     struct file_descriptors files;
     unsigned char data[3];
+    char buf[1000];
 
     printf("Creating device...\n");
     files =  create_device();
-    center_cursor();
+
+    // center_cursor();
 
     pid_t id = fork();
 
@@ -57,8 +76,10 @@ int main(void) {
 
     // process to handle system calls
     else {
-        process_input();
+        process_input(files, buf);
     }
+
+//    process_input(files, buf);
 
     printf("\nDestroying device...\n");
     destroy_device();
