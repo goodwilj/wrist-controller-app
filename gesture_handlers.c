@@ -12,6 +12,7 @@
 
 int fd_uinput;
 int fd_mice;
+int fd_bt;
 int max_fd;
 
 void emit(int fd_uinput, int type, int code, int val)
@@ -30,22 +31,20 @@ void emit(int fd_uinput, int type, int code, int val)
 
 int connect_to_bluetooth(){
 
-    int fd = open("/dev/rfcomm0", O_RDONLY);
-    if(fd < 0 ){
+    fd_bt = open("/dev/rfcomm0", O_RDONLY);
+    if(fd_bt < 0 ){
         printf("ERROR: could not connect to bluetooth\n");
         return 0;
     }
-
-    return fd;
+    return fd_bt;
 }
 
 int read_from_bluetooth(int fd, char *buf){
 
-    if(read(fd, buf, sizeof(buf)) < 0){
+    if(read(fd, buf, 100) < 0){
         printf("ERROR: Reading from device\n");
         return 0;
     }
-
     return 1;
 }
 
@@ -60,16 +59,26 @@ struct file_descriptors create_device(){
         return files;
     }
 
-    // open file description to input/mice
+    // open file descriptor to input/mice
     if((fd_mice = open("/dev/input/mice", O_RDONLY | O_NONBLOCK)) < 0){
         printf("ERROR: Opening dev/input/mice...\n");
         return files;
     }
 
-    if(fd_uinput > fd_mice)
-        max_fd = fd_uinput;
-    else
-        max_fd = fd_mice;
+    // open file descriptor to bluetooth
+    connect_to_bluetooth();
+
+    if (fd_uinput > fd_mice) {
+        if (fd_bt > fd_uinput)
+            max_fd = fd_bt;
+        else
+            max_fd = fd_uinput;
+    } else {
+        if(fd_bt > fd_mice)
+            max_fd = fd_bt;
+        else
+            max_fd = fd_mice;
+    }
 
     // enable mouse buttons and relative events
     ioctl(fd_uinput, UI_SET_EVBIT, EV_KEY);
@@ -85,10 +94,6 @@ struct file_descriptors create_device(){
     ioctl(fd_uinput, UI_SET_RELBIT, REL_X);
     ioctl(fd_uinput, UI_SET_RELBIT, REL_Y);
 
-//    ioctl(fd_uinput, UI_SET_EVBIT, EV_ABS);
-    ioctl(fd_uinput, UI_SET_ABSBIT, ABS_X);
-    ioctl(fd_uinput, UI_SET_ABSBIT, ABS_Y);
-
     memset(&usetup, 0, sizeof(usetup));
     usetup.id.bustype = BUS_BLUETOOTH;
     usetup.id.vendor = 0x0001;
@@ -100,7 +105,8 @@ struct file_descriptors create_device(){
 
     sleep(1);
 
-    files.rd = fd_mice;
+    files.rd_sys = fd_mice;
+    files.rd_bt = fd_bt;
     files.wr = fd_uinput;
     files.max = max_fd;
 
@@ -170,7 +176,7 @@ void move_mouse(int x, int y, int ms){
     emit(fd_uinput, EV_REL, REL_X, x);
     emit(fd_uinput, EV_REL, REL_Y, y);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
-    usleep(ms); // temporary
+    usleep(ms);
 }
 
 // data[1] = x-coord
