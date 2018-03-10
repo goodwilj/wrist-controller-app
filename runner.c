@@ -12,8 +12,9 @@
 #include "gesture_handlers.h"
 #include "utils.h"
 
-struct kinematics x_movement ={ .v0 = 0, .t = 1, .d = 0 };
-struct kinematics y_movement ={ .v0 = 0, .t = 1, .d = 0 };
+// TODO: tweak stuctures so that the movement is reset each time. Cursor shouldnt be forced into corner.
+struct kinematics x_movement ={ .v0 = 0, .t = 0.01, .d = 0 };
+struct kinematics y_movement ={ .v0 = 0, .t = 0.01, .d = 0 };
 
 void update_coordinates(double x_accel, double y_accel){
 
@@ -51,8 +52,8 @@ int split_packet(char *buf){
     update_coordinates(x_accel, y_accel);
 
     // coordinates to be used
-    int x = (int)convert_to_negative(x_movement.d);
-    int y = (int)convert_to_negative(y_movement.d);
+    int x = (int)convert_to_negative(x_movement.d*10);
+    int y = (int)convert_to_negative(y_movement.d*10);
     int speed = (int)components_to_vector(x_movement.vf, y_movement.vf);
 
     move_mouse(x, y, speed); // set the new coordinates relative to the old position
