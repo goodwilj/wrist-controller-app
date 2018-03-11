@@ -21,24 +21,19 @@ int main(void)
 {
     printf("Starting program...\n");
     clock_t start = clock();
-    //scan_for_device();
-//    create_device();
-//    move_mouse(-5,5);
-//    mouse_right_click();
-//    destroy_device();
-    //printf("%d", test_function(8, 6));
-    //double test[5] = {1.3, 4.5, 8.23, 8.0, 7.0};
-    //record_training_data(test, 3);
-    //6.8,3.2,5.9,2.3 ---> answer : 3
-    //5.0,3.6,1.4,0.2 --> answer : 1
-    //5.6,2.9,3.6,1.3 --> answer: 2
-    RPoint r[30];
-    extract_data(r, 30, 4, "../data/testData.csv");
     int correct = 0;
     int total = 0;
     int prediction = 0;
+    int numTrainingPoints = 120;
+    int numFeatures = 4;
+    int numClasses  = 3;
+
+    RPoint r[30];
+    RPoint training_data[numTrainingPoints];
+    extract_data(r, 30, numFeatures, "../data/testData.csv");
+    extract_data(training_data, numTrainingPoints, numFeatures, "../data/trainingData.csv");
     for(int i = 0; i < 30; i++){
-        prediction = classify_knn(r[i]);
+        prediction = classify_knn(r[i], training_data, numTrainingPoints, numFeatures, numClasses);
         total++;
         if(prediction == r[i].class){
             correct++;
