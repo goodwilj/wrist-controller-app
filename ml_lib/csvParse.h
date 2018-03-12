@@ -11,6 +11,7 @@
 
 //feed this the array, the number of training points, and the number of measurements in each point
 void extract_data(RPoint *, int, int, char *);
+void extract_data_multiple(RPoint *, int, int, int, char *);
 
 #endif //WRIST_CONTROLLER_APP_CSVPARSE_H
 

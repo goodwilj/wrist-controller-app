@@ -14,7 +14,9 @@ struct points{
 };
 struct raw_points{
     int class;
-    double data[4];
+    double data[178];
+    double datay[178];
+    double dataz[178];
 };
 typedef struct points Point;
 typedef struct raw_points RPoint;
@@ -25,5 +27,6 @@ int classify_knn(RPoint, RPoint *, int, int, int);
 int classify_knn_internal(RPoint, RPoint *, int, int, int, int);
 void calculate_frequencies(Point *, int *, int);
 int determine_class(int *, int);
-
+double minimum(double, double, double);
+Point dtw(RPoint, RPoint, int);
 #endif //WRIST_CONTROLLER_APP_KNN_H
