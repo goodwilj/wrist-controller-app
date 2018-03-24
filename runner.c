@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <linux/uinput.h>
@@ -10,53 +11,61 @@
 #include <string.h>
 #include <time.h>
 #include "gesture_handlers.h"
-#include "utils.h"
 
-// TODO: tweak stuctures so that the movement is reset each time. Cursor shouldnt be forced into corner.
-struct kinematics x_movement ={ .v0 = 0, .t = 0.01, .d = 0 };
-struct kinematics y_movement ={ .v0 = 0, .t = 0.01, .d = 0 };
+double get_double(const char *str) {
 
-void update_coordinates(double x_accel, double y_accel){
+    while (*str && !(isdigit(*str) || ((*str == '-' || *str == '+') && isdigit(*(str + 1)))))
+        str++;
 
-    // convert acceleration to velocity for x & y components
-    accel_to_velocity(&x_movement, x_accel);
-    accel_to_velocity(&y_movement, y_accel);
-
-    // convert velocity to distance for x & y components
-    velocity_to_distance(&x_movement);
-    velocity_to_distance(&y_movement);
+    return strtod(str, NULL);
 }
 
+void update_coordinates(double x_deg, double y_deg){
+
+    int x = 0, y = 0;
+
+    // change in position = (degrees/second * seconds) * pixel multiplier
+    if (y_deg > 4 || y_deg < -4) x = (int) ((y_deg * 0.05) * 20);
+    if (x_deg > 4 || x_deg < -4) y = (int) ((x_deg * 0.05) * 12);
+
+    // print coordinates of now
+    printf("X: %f, ", x_deg);
+    printf("Y: %f\n", y_deg);
+
+    move_mouse(x, y, 10);
+}
+
+/**
+ * Split the gyroscope data into x and y coordinates
+ * @param buf contains the data.
+ * @return 1 for success and 0 for error.
+ */
 int split_packet(char *buf){
 
-    double x_accel = 0, y_accel = 0, z_accel = 0;
-    char position[10];
+    double x_deg = 0, y_deg = 0;
 
-    char *token = strtok(buf, ","); // split into tokens
-    int count = 0;
-    while (token != NULL) {
+    char *block = strtok(buf,"\r\n");
+    char *token = strtok(block, ","); // split into tokens
+    int count;
 
-        count++;
-        if(count == 1)
-            x_accel = atof(token);
-        else if (count == 2)
-            y_accel = atof(token);
-        else if (count == 3)
-            z_accel = atof(token);
-        else if (count == 4)
-            strcpy(position, token);
+    while(block != NULL) {
 
-        token = strtok(NULL, ",");
+        count = 0;
+        while (token != NULL) {
+
+            count++;
+            if(count == 1)
+                x_deg = get_double(token);
+            else if (count == 2)
+                y_deg = get_double(token);
+
+            token = strtok(NULL, ",");
+        }
+        block = strtok(NULL,"\n");
     }
 
-    update_coordinates(x_accel, y_accel);
-
-    // coordinates to be used
-    int x = (int)convert_to_negative(x_movement.d*10);
-    int y = (int)convert_to_negative(y_movement.d*10);
-    int speed = (int)components_to_vector(x_movement.vf, y_movement.vf);
-
-    move_mouse(x, y, speed); // set the new coordinates relative to the old position
+    update_coordinates(x_deg, y_deg);
+    return 1;
 }
 
 /**
@@ -100,23 +109,31 @@ void process_input(struct file_descriptors files, char *buf) {
 
     struct timespec time;
     time.tv_sec = 0;
-    time.tv_nsec =  10000000; // 10ms poll time
+    time.tv_nsec = 50000000; // 50ms poll time
+
+    write_to_bluetooth(files.rd_bt, 1);
 
     while (1) {
 
         if (select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) >= 0) {
             memset(buf, 0, 1000);
-            read_from_bluetooth(files.rd_bt, buf);
-            printf("%s", buf);
 
+            // read packet from the device
+            read_from_bluetooth(files.rd_bt, buf);
+
+            // process the packet
             split_packet(buf);
 
+            // sleep for 50 ms
             nanosleep(&time, NULL);
+
+            // relay that the packet was received
+            write_to_bluetooth(files.rd_bt, 1);
         }
-    }
+  }
 }
 
-int main(void) {
+int main() {
 
     struct file_descriptors files;
     unsigned char data[3];
@@ -125,7 +142,7 @@ int main(void) {
     printf("Creating device...\n");
     files =  create_device();
 
-    // center_cursor();
+    center_cursor();
 
     pid_t id = fork();
 
@@ -138,8 +155,6 @@ int main(void) {
     else {
         process_input(files, buf);
     }
-
-//    process_input(files, buf);
 
     printf("\nDestroying device...\n");
     destroy_device();

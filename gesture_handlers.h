@@ -10,6 +10,7 @@ struct file_descriptors{
 // Device Connection
 int connect_to_bluetooth();
 int read_from_bluetooth(int fd, char *buf);
+int write_to_bluetooth(int fd, int set);
 
 // Core Events
 struct file_descriptors create_device();
