@@ -199,7 +199,7 @@ int get_mouse_coordinates(unsigned char *buf){
  */
 void center_cursor(){
 
-    move_mouse(-1920, -1080, 0);
-//    move_mouse(480, 270, 0);
+//    move_mouse(-1920, -1080, 0);
+    move_mouse(480, 270, 0);
 }
 
