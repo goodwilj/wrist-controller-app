@@ -1,5 +1,10 @@
 # Wrist Controller Desktop Client
-A destop client to process data from the Wrist Controller device 
+The desktop client for the Wristband Gesture Controller.
+
+## Designed to run with the following hardware:
+- HC-06 Bluetooth chip
+- ATmega328p microprocessor
+- LSM9DS0 3-axis sensor
 
 ## To run
 1. Install dependencies
@@ -15,13 +20,11 @@ A destop client to process data from the Wrist Controller device
 - `trust 98:D3:31:FC:95:BD`
 6. Pair with device
 - `pair 98:D3:31:FC:95:BD`
-7. Connect with device
-- `connect 98:D3:31:FC:95:BD`
-8. Exit from bluetooth
+7. Exit from bluetooth
 - `exit`
-9. Create virtual terminal device
+8. Bind virtual port to device
 - `sudo rfcomm bind 0 98:D3:31:FC:95:BD`
-10. Read from /dev/rfcomm0
+9. Compile and run runner.c
 
 
 #### Developed for Pitt Senior Design 2018
