@@ -19,7 +19,7 @@ void emit(int fd_uinput, int type, int code, int val)
 {
     struct input_event ie;
     struct file_descriptors files;
-
+    
     ie.type = type;
     ie.code = code;
     ie.value = val;
@@ -31,7 +31,7 @@ void emit(int fd_uinput, int type, int code, int val)
 
 int connect_to_bluetooth(){
 
-    fd_bt = open("/dev/rfcomm0", O_RDONLY);
+    fd_bt = open("/dev/rfcomm0", O_RDWR);
     if(fd_bt < 0 ){
         printf("ERROR: could not connect to bluetooth\n");
         return 0;
@@ -43,6 +43,15 @@ int read_from_bluetooth(int fd, char *buf){
 
     if(read(fd, buf, 100) < 0){
         printf("ERROR: Reading from device\n");
+        return 0;
+    }
+    return 1;
+}
+
+int write_to_bluetooth(int fd, int set){
+
+    if(write(fd, &set, sizeof(int)) < 0){
+        printf("ERROR: Writing to device\n");
         return 0;
     }
     return 1;
@@ -170,8 +179,6 @@ void close_window(){
 }
 
 void move_mouse(int x, int y, int ms){
-
-    // TODO: need to calculate the speed the mouse moves from the accelerometer data
 
     emit(fd_uinput, EV_REL, REL_X, x);
     emit(fd_uinput, EV_REL, REL_Y, y);
