@@ -25,14 +25,14 @@ void update_coordinates(double x_deg, double y_deg){
     int x = 0, y = 0;
 
     // change in position = (degrees/second * seconds) * pixel multiplier
-    if (y_deg > 4 || y_deg < -4) x = (int) ((y_deg * 0.05) * 20);
-    if (x_deg > 4 || x_deg < -4) y = (int) ((x_deg * 0.05) * 12);
+    if (y_deg > 2 || y_deg < -2) x = (int) ((y_deg * 0.05) * 20);
+    if (x_deg > 2 || x_deg < -2) y = (int) ((x_deg * 0.05) * 12);
 
     // print coordinates of now
     printf("X: %f, ", x_deg);
     printf("Y: %f\n", y_deg);
 
-    move_mouse(x, y, 10);
+    move_mouse(x, y, 1);
 }
 
 /**
