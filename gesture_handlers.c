@@ -11,6 +11,7 @@
 #include <string.h>
 
 int fd_uinput;
+int fd_data;
 int fd_mice;
 int fd_bt;
 int max_fd;
@@ -18,7 +19,6 @@ int max_fd;
 void emit(int fd_uinput, int type, int code, int val)
 {
     struct input_event ie;
-    struct file_descriptors files;
     
     ie.type = type;
     ie.code = code;
@@ -74,6 +74,12 @@ struct file_descriptors create_device(){
         return files;
     }
 
+    // open file descriptor to data stream for knn
+    if((fd_data = open("data.txt", O_WRONLY | O_CREAT | O_NONBLOCK)) < 0){
+        printf("ERROR: Opening data file\n");
+        return files;
+    }
+
     // open file descriptor to bluetooth
     connect_to_bluetooth();
 
@@ -118,6 +124,7 @@ struct file_descriptors create_device(){
     files.rd_bt = fd_bt;
     files.wr = fd_uinput;
     files.max = max_fd;
+    files.data = fd_data;
 
     return files;
 }
@@ -199,7 +206,7 @@ int get_mouse_coordinates(unsigned char *buf){
  */
 void center_cursor(){
 
-//    move_mouse(-1920, -1080, 0);
+    move_mouse(-1920, -1080, 0);
     move_mouse(480, 270, 0);
 }
 

@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include "gesture_handlers.h"
+#include "utils.h"
 
 double get_double(const char *str) {
 
@@ -40,9 +41,10 @@ void update_coordinates(double x_deg, double y_deg){
  * @param buf contains the data.
  * @return 1 for success and 0 for error.
  */
-int split_packet(char *buf){
+int split_packet(char *buf, struct file_descriptors files){
 
     double x_deg = 0, y_deg = 0;
+    char *x_mag, *y_mag, *z_mag;
 
     char *block = strtok(buf,"\r\n");
     char *token = strtok(block, ","); // split into tokens
@@ -58,12 +60,19 @@ int split_packet(char *buf){
                 x_deg = get_double(token);
             else if (count == 2)
                 y_deg = get_double(token);
+            else if (count == 3)
+                x_mag = token;
+            else if (count == 4)
+                y_mag = token;
+            else if (count == 5)
+                z_mag = token;
 
             token = strtok(NULL, ",");
         }
         block = strtok(NULL,"\n");
     }
 
+    pipe_to_knn(files, x_mag, y_mag, z_mag);
     update_coordinates(x_deg, y_deg);
     return 1;
 }
@@ -122,7 +131,7 @@ void process_input(struct file_descriptors files, char *buf) {
             read_from_bluetooth(files.rd_bt, buf);
 
             // process the packet
-            split_packet(buf);
+            split_packet(buf, files);
 
             // sleep for 50 ms
             nanosleep(&time, NULL);
