@@ -12,6 +12,7 @@ int pipe_to_knn(struct file_descriptors files, char *x_mag, char *y_mag, char *z
     int fd_data = files.data;
 
     char data[100];
+    memset(data, 0, 100);
 
     strcat(data, x_mag);
     strcat(data, ",");
