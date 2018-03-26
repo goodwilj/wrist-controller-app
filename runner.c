@@ -41,13 +41,15 @@ void update_coordinates(double x_deg, double y_deg){
  * @param buf contains the data.
  * @return 1 for success and 0 for error.
  */
-int split_packet(char *buf, struct file_descriptors files){
+int split_packet(char *buf){
 
     double x_deg = 0, y_deg = 0;
-    char *x_mag, *y_mag, *z_mag;
+    char *x_mag = (char *)malloc(10);
+    char *y_mag = (char *)malloc(10);
+    char *z_mag = (char *)malloc(10);
 
     char *block = strtok(buf,"\r\n");
-    char *token = strtok(block, ","); // split into tokens
+    char *token = strtok(buf, ","); // split into tokens
     int count;
 
     while(block != NULL) {
@@ -69,11 +71,16 @@ int split_packet(char *buf, struct file_descriptors files){
 
             token = strtok(NULL, ",");
         }
-        block = strtok(NULL,"\n");
+        block = strtok(NULL,"\r\n");
     }
 
-    pipe_to_knn(files, x_mag, y_mag, z_mag);
+    pipe_to_knn(x_mag, y_mag, z_mag);
     update_coordinates(x_deg, y_deg);
+
+//    free(x_mag);
+//    free(y_mag);
+//    free(z_mag);
+
     return 1;
 }
 
@@ -118,35 +125,35 @@ void process_input(struct file_descriptors files, char *buf) {
 
     struct timespec time;
     time.tv_sec = 0;
-    time.tv_nsec = 50000000; // 50ms poll time
+    time.tv_nsec = 60000000; // 60ms poll time
 
     write_to_bluetooth(files.rd_bt, 1);
 
     while (1) {
 
         if (select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) >= 0) {
-            memset(buf, 0, 1000);
+            memset(buf, 0, 40);
 
             // read packet from the device
             read_from_bluetooth(files.rd_bt, buf);
 
             // process the packet
-            split_packet(buf, files);
+            split_packet(buf);
 
-            // sleep for 50 ms
+            // sleep for 60 ms
             nanosleep(&time, NULL);
 
             // relay that the packet was received
             write_to_bluetooth(files.rd_bt, 1);
         }
-  }
+    }
 }
 
 int main() {
 
     struct file_descriptors files;
     unsigned char data[3];
-    char buf[1000];
+    char buf[40];
 
     printf("Creating device...\n");
     files =  create_device();
