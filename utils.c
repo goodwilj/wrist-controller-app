@@ -7,12 +7,18 @@
 #include "gesture_handlers.h"
 
 
-int pipe_to_knn(struct file_descriptors files, char *x_mag, char *y_mag, char *z_mag) {
+int pipe_to_knn(char *x_mag, char *y_mag, char *z_mag) {
 
-    int fd_data = files.data;
+    size_t len;
 
-    char data[100];
-    memset(data, 0, 100);
+    FILE *fd_dataa = fopen("data.txt", "w");
+
+    len = strlen(x_mag);
+    len += strlen(y_mag);
+    len += strlen(z_mag);
+    len += 2;
+
+    char *data = (char*) malloc(len);
 
     strcat(data, x_mag);
     strcat(data, ",");
@@ -20,10 +26,8 @@ int pipe_to_knn(struct file_descriptors files, char *x_mag, char *y_mag, char *z
     strcat(data, ",");
     strcat(data, z_mag);
 
-    if(write(fd_data, &data, sizeof(data)) < 0){
-        printf("ERROR: Writing to data file\n");
-        return 0;
-    }
+    fwrite(data, 1, len, fd_dataa);
 
-    return 1;
+    fclose(fd_dataa);
+    free(data);
 }

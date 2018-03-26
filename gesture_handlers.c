@@ -11,7 +11,6 @@
 #include <string.h>
 
 int fd_uinput;
-int fd_data;
 int fd_mice;
 int fd_bt;
 int max_fd;
@@ -41,7 +40,7 @@ int connect_to_bluetooth(){
 
 int read_from_bluetooth(int fd, char *buf){
 
-    if(read(fd, buf, 100) < 0){
+    if(read(fd, buf, 40) < 0){
         printf("ERROR: Reading from device\n");
         return 0;
     }
@@ -71,12 +70,6 @@ struct file_descriptors create_device(){
     // open file descriptor to input/mice
     if((fd_mice = open("/dev/input/mice", O_RDONLY | O_NONBLOCK)) < 0){
         printf("ERROR: Opening dev/input/mice...\n");
-        return files;
-    }
-
-    // open file descriptor to data stream for knn
-    if((fd_data = open("data.txt", O_WRONLY | O_CREAT | O_NONBLOCK)) < 0){
-        printf("ERROR: Opening data file\n");
         return files;
     }
 
@@ -124,7 +117,6 @@ struct file_descriptors create_device(){
     files.rd_bt = fd_bt;
     files.wr = fd_uinput;
     files.max = max_fd;
-    files.data = fd_data;
 
     return files;
 }
