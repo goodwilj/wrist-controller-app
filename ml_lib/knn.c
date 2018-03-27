@@ -1,4 +1,4 @@
-//
+//knn.c
 // Created by nbabha on 2/16/18.
 //
 
@@ -12,7 +12,7 @@
 
 //external function called to run algorithm
 int classify_knn(RPoint r, RPoint * training_data, int numTrainingPoints, int numFeatures, int numClasses){
-    int k = 17;
+    int k = 15;
     return classify_knn_internal(r,training_data, numTrainingPoints, numFeatures, numClasses, k);
 }
 //steps for classification
@@ -28,15 +28,16 @@ int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, in
         classes[i] = 0;
     }
     for(int i = 0; i < numTrainingPoints; i++){
-        points[i] = euclidean_distance(training[i], r, numFeatures);
+        points[i] = dtw(training[i], r, numFeatures);
+        //points[i] = euclidean_distance(training[i], r, numFeatures);
     }
     qsort(points, (size_t)numTrainingPoints, size_struct_points, compare);
     for(int i = 0; i < k; i++) {
-        //printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
+        printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
     }
     calculate_frequencies(points, classes, k);
     int determination = determine_class(classes, numClasses);
-    //printf("Class: %d\n", determination);
+    printf("Class: %d\n", determination);
 
     return determination;
 }
@@ -106,15 +107,66 @@ Point euclidean_distance(RPoint r1, RPoint r2, int size){
     double * data1 = r1.data;
     double * data2 = r2.data;
     Point p;
-    double squared_distance = 0.0;
-    double distance;
+    double squared_distance1 = 0.0;
+    double squared_distance2 = 0.0;
+    double distance1;
+    double distance2;
     for(int i = 0; i < size; i++){
         //printf("data %f - %f", data1[i], data2[i]);
-        squared_distance = squared_distance + pow((data1[i] - data2[i]), 2);
+        squared_distance1 = squared_distance1 + pow((data1[i] - data2[i]), 2);
+        squared_distance2 = squared_distance2 + pow((r1.datay[i] - r2.datay[i]), 2);
     }
-    distance = sqrt(squared_distance);
+    distance1 = sqrt(squared_distance1);
+    distance2 = sqrt(squared_distance2);
+    p.distance = distance1 + distance2;
+    p.class = r1.class;
+    return p;
+}
+//Dynamic Time Warping implementation. Better way to compare time-series data.
+//Takes N^2 time wrt #features.
+Point dtw(RPoint r1, RPoint r2, int size){
+    double dtwCalc1[size+1][size+1];
+    double dtwCalc2[size+1][size+1];
+    double dtwCalc3[size+1][size+1];
+    double infinity = 10000000;
+    double cost1, cost2, cost3;
+    Point p;
+    double distance;
+    for(int i = 0; i < size+1; i++){
+        dtwCalc1[i][0] = infinity;
+        dtwCalc1[0][i] = infinity;
+        dtwCalc2[i][0] = infinity;
+        dtwCalc2[0][i] = infinity;
+        dtwCalc3[i][0] = infinity;
+        dtwCalc3[0][i] = infinity;
+    }
+    dtwCalc1[0][0] = 0.0;
+    dtwCalc2[0][0] = 0.0;
+    dtwCalc3[0][0] = 0.0;
+    for(int i = 0; i < size; i++){
+        for(int j = 0; j < size; j++){
+            cost1 = fabs(r1.data[i] - r2.data[j]);
+            dtwCalc1[i+1][j+1] = cost1 + minimum(dtwCalc1[i][j+1], dtwCalc1[i+1][j], dtwCalc1[i][j]);
+            cost2 = fabs(r1.datay[i] - r2.datay[j]);
+            dtwCalc2[i+1][j+1] = cost2 + minimum(dtwCalc2[i][j+1], dtwCalc2[i+1][j], dtwCalc2[i][j]);
+            cost3 = fabs(r1.dataz[i] - r2.dataz[j]);
+            dtwCalc3[i+1][j+1] = cost3 + minimum(dtwCalc3[i][j+1], dtwCalc3[i+1][j], dtwCalc3[i][j]);
+        }
+    }
+    distance = dtwCalc1[size][size] + dtwCalc2[size][size] + dtwCalc3[size][size];
     p.distance = distance;
     p.class = r1.class;
     return p;
+}
+//calculate minimum of three doubles
+double minimum(double a, double b, double c){
+    if(a < b && a < c){
+        return a;
+    }
+    else if(b < a && b < c){
+        return b;
+    }
+    else return c;
+
 }
 
