@@ -14,9 +14,9 @@ struct points{
 };
 struct raw_points{
     int class;
-    double data[178];
-    double datay[178];
-    double dataz[178];
+    double data[21];
+    double datay[21];
+    double dataz[21];
 };
 typedef struct points Point;
 typedef struct raw_points RPoint;

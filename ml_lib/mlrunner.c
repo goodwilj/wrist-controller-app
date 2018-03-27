@@ -1,4 +1,4 @@
-//
+//mlrunner.c
 // Created by nbabha on 2/27/18.
 //
 
@@ -24,17 +24,16 @@ int main(void)
     int correct = 0;
     int total = 0;
     int prediction = 0;
-    int numTrainingPoints = 150;
-    int numTestPoints = 30;
-    int numFeatures = 160;
-    int numClasses  = 3;
+    int numTrainingPoints = 23;
+    int numTestPoints = 1;
+    int numFeatures = 21;
+    int numClasses  = 2;
     int numDimensions = 3;
 
     RPoint r[numTestPoints];
     RPoint training_data[numTrainingPoints];
-    extract_data_multiple(r, numTestPoints, numFeatures, numDimensions, "../data/testLetterData.csv");
-    extract_data_multiple(training_data, numTrainingPoints, numFeatures, numDimensions, "../data/trainingLetterData.csv");
-    printf("PogChamps\n");
+    extract_data_multiple(r, numTestPoints, numFeatures, numDimensions, "../data/PreliminaryTestData.csv");
+    extract_data_multiple(training_data, numTrainingPoints, numFeatures, numDimensions, "../data/PreliminaryTrainingData.csv");
     for(int i = 0; i < numTestPoints; i++){
         prediction = classify_knn(r[i], training_data, numTrainingPoints, numFeatures, numClasses);
         total++;
