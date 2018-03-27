@@ -12,6 +12,12 @@
 #include <time.h>
 #include "gesture_handlers.h"
 #include "utils.h"
+#include "ml_lib/knn.h"
+#include "ml_lib/csvParse.h"
+
+struct sample_info knn_info = { 21, 23, 3, 3, 0 };
+RPoint raw_point;
+RPoint training_data[23];
 
 double get_double(const char *str) {
 
@@ -19,6 +25,29 @@ double get_double(const char *str) {
         str++;
 
     return strtod(str, NULL);
+}
+
+int process_for_knn(double x, double y, double z){
+
+    raw_point.data_x[knn_info.count] = x;
+    raw_point.data_y[knn_info.count] = y;
+    raw_point.data_z[knn_info.count] = z;
+    int gesture = -1;
+
+    if (knn_info.count++ == knn_info.number_of_features) {
+        knn_info.count = 0;
+        gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
+
+        knn_info.count -= 5;
+        int len = sizeof(raw_point.data_x)/sizeof(raw_point.data_x[0]);
+        for (int i = 0; i < len - 5; i++) {
+            raw_point.data_x[i] = raw_point.data_x[i + 5];
+            raw_point.data_y[i] = raw_point.data_y[i + 5];
+            raw_point.data_z[i] = raw_point.data_z[i + 5];
+        }
+    }
+
+    return gesture;
 }
 
 void update_coordinates(double x_deg, double y_deg){
@@ -30,8 +59,8 @@ void update_coordinates(double x_deg, double y_deg){
     if (x_deg > 2 || x_deg < -2) y = (int) ((x_deg * 0.05) * 12);
 
     // print coordinates of now
-    printf("X: %f, ", x_deg);
-    printf("Y: %f\n", y_deg);
+//    printf("X: %f, ", x_deg);
+//    printf("Y: %f\n", y_deg);
 
     move_mouse(x, y, 1);
 }
@@ -44,9 +73,10 @@ void update_coordinates(double x_deg, double y_deg){
 int split_packet(char *buf){
 
     double x_deg = 0, y_deg = 0;
-    char *x_mag = (char *)malloc(10);
-    char *y_mag = (char *)malloc(10);
-    char *z_mag = (char *)malloc(10);
+    double x_mag = 0, y_mag = 0, z_mag = 0;
+//    char *x_mag = (char *)malloc(10);
+//    char *y_mag = (char *)malloc(10);
+//    char *z_mag = (char *)malloc(10);
 
     char *block = strtok(buf,"\r\n");
     char *token = strtok(buf, ","); // split into tokens
@@ -63,19 +93,22 @@ int split_packet(char *buf){
             else if (count == 2)
                 y_deg = get_double(token);
             else if (count == 3)
-                x_mag = token;
+                x_mag = get_double(token);
             else if (count == 4)
-                y_mag = token;
+                y_mag = get_double(token);
             else if (count == 5)
-                z_mag = token;
+                z_mag = get_double(token);
 
             token = strtok(NULL, ",");
         }
         block = strtok(NULL,"\r\n");
     }
 
-    pipe_to_knn(x_mag, y_mag, z_mag);
     update_coordinates(x_deg, y_deg);
+    int gesture = process_for_knn(x_mag, y_mag, z_mag);
+
+    // print the returned gesture (FOR DEMO ONLY)
+    printf("Gesture: %d\n", gesture);
 
 //    free(x_mag);
 //    free(y_mag);
@@ -154,6 +187,10 @@ int main() {
     struct file_descriptors files;
     unsigned char data[3];
     char buf[40];
+    char *training_data_location = "../data/PreliminaryTrainingData.csv";
+
+    printf("Getting training data...\n");
+    extract_data_multiple(training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_dimensions, training_data_location);
 
     printf("Creating device...\n");
     files =  create_device();

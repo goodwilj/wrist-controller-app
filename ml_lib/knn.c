@@ -15,6 +15,7 @@ int classify_knn(RPoint r, RPoint * training_data, int numTrainingPoints, int nu
     int k = 15;
     return classify_knn_internal(r,training_data, numTrainingPoints, numFeatures, numClasses, k);
 }
+
 //steps for classification
 //1. Using input point, create Points from each RPoint of the training set
 //2. Sort Points
@@ -32,12 +33,12 @@ int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, in
         //points[i] = euclidean_distance(training[i], r, numFeatures);
     }
     qsort(points, (size_t)numTrainingPoints, size_struct_points, compare);
-    for(int i = 0; i < k; i++) {
-        printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
-    }
+//    for(int i = 0; i < k; i++) {
+//        printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
+//    }
     calculate_frequencies(points, classes, k);
     int determination = determine_class(classes, numClasses);
-    printf("Class: %d\n", determination);
+//    printf("Class: %d\n", determination);
 
     return determination;
 }
@@ -74,7 +75,7 @@ double * process_data_internal(double * s, int size){
 ////////////////////////////////////Primitive helper functions/////////////////////////////
 
 //Compare function for Point structs, used for qsort
-int compare(const void *v1, const void *v2){
+int compare(void *v1, void *v2){
     Point *p1 = v1;
     Point *p2 = v2;
     if(p1->distance > p2->distance){
@@ -90,8 +91,8 @@ int compare(const void *v1, const void *v2){
 //return manhattan distance b/w two raw points. r1 is the training data, r2 is the
 //real time data up for classification
 Point manhattan_distance(RPoint r1, RPoint r2, int size){
-    double * data1 = r1.data;
-    double * data2 = r2.data;
+    double * data1 = r1.data_x;
+    double * data2 = r2.data_x;
     Point p;
     double dist = 0.0;
     for(int i = 0; i < size; i++){
@@ -104,8 +105,8 @@ Point manhattan_distance(RPoint r1, RPoint r2, int size){
 //return manhattan distance b/w two raw points. r1 is the training data, r2 is the
 //real time data up for classification, size is the number of features
 Point euclidean_distance(RPoint r1, RPoint r2, int size){
-    double * data1 = r1.data;
-    double * data2 = r2.data;
+    double * data1 = r1.data_x;
+    double * data2 = r2.data_x;
     Point p;
     double squared_distance1 = 0.0;
     double squared_distance2 = 0.0;
@@ -114,7 +115,7 @@ Point euclidean_distance(RPoint r1, RPoint r2, int size){
     for(int i = 0; i < size; i++){
         //printf("data %f - %f", data1[i], data2[i]);
         squared_distance1 = squared_distance1 + pow((data1[i] - data2[i]), 2);
-        squared_distance2 = squared_distance2 + pow((r1.datay[i] - r2.datay[i]), 2);
+        squared_distance2 = squared_distance2 + pow((r1.data_y[i] - r2.data_y[i]), 2);
     }
     distance1 = sqrt(squared_distance1);
     distance2 = sqrt(squared_distance2);
@@ -145,11 +146,11 @@ Point dtw(RPoint r1, RPoint r2, int size){
     dtwCalc3[0][0] = 0.0;
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){
-            cost1 = fabs(r1.data[i] - r2.data[j]);
+            cost1 = fabs(r1.data_x[i] - r2.data_x[j]);
             dtwCalc1[i+1][j+1] = cost1 + minimum(dtwCalc1[i][j+1], dtwCalc1[i+1][j], dtwCalc1[i][j]);
-            cost2 = fabs(r1.datay[i] - r2.datay[j]);
+            cost2 = fabs(r1.data_y[i] - r2.data_y[j]);
             dtwCalc2[i+1][j+1] = cost2 + minimum(dtwCalc2[i][j+1], dtwCalc2[i+1][j], dtwCalc2[i][j]);
-            cost3 = fabs(r1.dataz[i] - r2.dataz[j]);
+            cost3 = fabs(r1.data_z[i] - r2.data_z[j]);
             dtwCalc3[i+1][j+1] = cost3 + minimum(dtwCalc3[i][j+1], dtwCalc3[i+1][j], dtwCalc3[i][j]);
         }
     }
