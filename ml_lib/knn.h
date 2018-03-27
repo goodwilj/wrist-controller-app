@@ -1,32 +1,47 @@
-//
-// Created by nbabha on 2/16/18.
-//
-
 #ifndef WRIST_CONTROLLER_APP_KNN_H
 #define WRIST_CONTROLLER_APP_KNN_H
 
+struct sample_info {
+
+    int number_of_features;
+    int number_of_points;
+    int number_of_classes;
+    int number_of_dimensions;
+    int count;
+};
+
+struct coordinate{
+
+    double x;
+    double y;
+    double z;
+};
 
 
-double * process_data_internal(double *, int );
 struct points{
     double distance;
     int class;
 };
+
 struct raw_points{
     int class;
-    double data[21];
-    double datay[21];
-    double dataz[21];
+    double data_x[21];
+    double data_y[21];
+    double data_z[21];
 };
+
 typedef struct points Point;
 typedef struct raw_points RPoint;
+
+double * process_data_internal(double *, int );
 Point manhattan_distance(RPoint, RPoint, int);
 Point euclidean_distance(RPoint, RPoint, int);
-int compare(const void *, const void *);
+int compare(void *, void *);
 int classify_knn(RPoint, RPoint *, int, int, int);
 int classify_knn_internal(RPoint, RPoint *, int, int, int, int);
 void calculate_frequencies(Point *, int *, int);
 int determine_class(int *, int);
 double minimum(double, double, double);
 Point dtw(RPoint, RPoint, int);
+
 #endif //WRIST_CONTROLLER_APP_KNN_H

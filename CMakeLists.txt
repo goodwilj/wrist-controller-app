@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 project (wrist-controller-app)
 include_directories("${PROJECT_SOURCE_DIR}")
-add_executable(wrist-controller-app gesture_handlers.c runner.c utils.c utils.h)
+add_executable(wrist-controller-app gesture_handlers.c runner.c utils.c ml_lib/knn.c ml_lib/csvParse.c)
 target_link_libraries(wrist-controller-app bluetooth)
 target_link_libraries(wrist-controller-app m)
