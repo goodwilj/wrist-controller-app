@@ -1,12 +1,7 @@
 #include "gesture_handlers.h"
 #include <linux/uinput.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <linux/uinput.h>
-#include <stdio.h>
 #include <unistd.h>
-#include <sys/syscall.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 
