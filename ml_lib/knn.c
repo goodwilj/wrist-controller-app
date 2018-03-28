@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include "knn.h"
 
@@ -18,7 +19,7 @@ int classify_knn(RPoint r, RPoint * training_data, int numTrainingPoints, int nu
 int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, int numFeatures, int numClasses, int k){
 
     Point points[numTrainingPoints];
-    int classes[numClasses + 1];
+    int classes[numClasses + 1], threshold = 10, gesture = -1;
     size_t size_struct_points = sizeof(Point);
 
     for(int i = 0; i < numClasses + 1; i++)
@@ -28,15 +29,20 @@ int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, in
         points[i] = dtw(training[i], r, numFeatures);
 
     qsort(points, (size_t)numTrainingPoints, size_struct_points, compare);
+    calculate_frequencies(points, classes, k);
 
 //    for(int i = 0; i < k; i++) {
 //        printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
 //    }
 
-    calculate_frequencies(points, classes, k);
+    if (points[0].distance < threshold)
+        gesture = determine_class(classes, numClasses);
 
-    return determine_class(classes, numClasses);
+    printf("Gesture: %d\n", gesture);
+
+    return gesture;
 }
+
 void calculate_frequencies(Point * sorted_points, int * classes, int k){
     for(int i = 0; i < k; i++)
         classes[sorted_points[i].class]++;
