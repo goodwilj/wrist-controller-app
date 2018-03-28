@@ -51,6 +51,12 @@ void sendGyroscopeData() {
   data.concat(gyro.gyro.x);
   data.concat(",");
   data.concat(gyro.gyro.y);
+  data.concat(",");
+  data.concat(mag.magnetic.x);
+  data.concat(",");
+  data.concat(mag.magnetic.y);
+  data.concat(",");
+  data.concat(mag.magnetic.z);
 
   Serial.println(data);
 }
@@ -62,6 +68,6 @@ void waitForResponse(){
     response = Serial.read();
   }
 
-  delay(50);
+  delay(40);
 }
 
