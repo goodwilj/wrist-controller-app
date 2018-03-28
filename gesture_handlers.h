@@ -15,6 +15,7 @@ int write_to_bluetooth(int fd, int set);
 // Core Events
 struct file_descriptors create_device();
 int destroy_device();
+int handle_gesture(int);
 
 void mouse_left_click();
 void mouse_right_click();

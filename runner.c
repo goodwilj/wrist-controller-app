@@ -25,7 +25,7 @@ int process_for_knn(double x, double y, double z){
     raw_point.data_x[knn_info.count] = x;
     raw_point.data_y[knn_info.count] = y;
     raw_point.data_z[knn_info.count] = z;
-    int gesture = -1;
+    int gesture;
 
     if (knn_info.count++ == knn_info.number_of_features) {
         gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
@@ -95,9 +95,7 @@ int split_packet(char *buf){
 
     update_coordinates(x_deg, y_deg);
     int gesture = process_for_knn(x_mag, y_mag, z_mag);
-
-    // print the returned gesture (FOR DEMO ONLY)
-    printf("Gesture: %d\n", gesture);
+    handle_gesture(gesture);
 
     return 1;
 }
@@ -143,7 +141,7 @@ void process_input(struct file_descriptors files, char *buf) {
 
     struct timespec time;
     time.tv_sec = 0;
-    time.tv_nsec = 60000000; // 60ms poll time
+    time.tv_nsec = 70000000; // 70ms poll time
 
     write_to_bluetooth(files.rd_bt, 1);
 

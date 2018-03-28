@@ -121,6 +121,20 @@ int destroy_device(){
     close(fd_uinput);
 }
 
+int handle_gesture(int gesture){
+
+    switch(gesture){
+        case 1:
+            mouse_left_click();
+            break;
+        case 2:
+            mouse_right_click();
+            break;
+        default:
+            break;
+    }
+}
+
 void mouse_left_click(){
     emit(fd_uinput, EV_KEY, BTN_LEFT, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
