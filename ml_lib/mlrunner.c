@@ -32,8 +32,8 @@ int main(void)
 
     RPoint r[numTestPoints];
     RPoint training_data[numTrainingPoints];
-    extract_data_multiple(r, numTestPoints, numFeatures, numDimensions, "../data/PreliminaryTestData.csv");
-    extract_data_multiple(training_data, numTrainingPoints, numFeatures, numDimensions, "../data/PreliminaryTrainingData.csv");
+    get_training_set(r, numTestPoints, numFeatures, numDimensions, "../data/PreliminaryTestData.csv");
+    get_training_set(training_data, numTrainingPoints, numFeatures, numDimensions, "../data/PreliminaryTrainingData.csv");
     for(int i = 0; i < numTestPoints; i++){
         prediction = classify_knn(r[i], training_data, numTrainingPoints, numFeatures, numClasses);
         total++;

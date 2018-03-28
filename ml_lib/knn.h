@@ -10,32 +10,18 @@ struct sample_info {
     int count;
 };
 
-struct coordinate{
-
-    double x;
-    double y;
-    double z;
-};
-
-
-struct points{
+typedef struct points{
     double distance;
     int class;
-};
+} Point;
 
-struct raw_points{
+typedef struct raw_points{
     int class;
     double data_x[21];
     double data_y[21];
     double data_z[21];
-};
+} RPoint;
 
-typedef struct points Point;
-typedef struct raw_points RPoint;
-
-double * process_data_internal(double *, int );
-Point manhattan_distance(RPoint, RPoint, int);
-Point euclidean_distance(RPoint, RPoint, int);
 int compare(void *, void *);
 int classify_knn(RPoint, RPoint *, int, int, int);
 int classify_knn_internal(RPoint, RPoint *, int, int, int, int);

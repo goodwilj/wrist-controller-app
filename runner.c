@@ -1,17 +1,10 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <strings.h>
-#include <linux/uinput.h>
-#include <stdio.h>
 #include <unistd.h>
-#include <sys/syscall.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <string.h>
 #include <time.h>
 #include "gesture_handlers.h"
-#include "utils.h"
 #include "ml_lib/knn.h"
 #include "ml_lib/csvParse.h"
 
@@ -35,7 +28,6 @@ int process_for_knn(double x, double y, double z){
     int gesture = -1;
 
     if (knn_info.count++ == knn_info.number_of_features) {
-        knn_info.count = 0;
         gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
 
         knn_info.count -= 5;
@@ -74,9 +66,6 @@ int split_packet(char *buf){
 
     double x_deg = 0, y_deg = 0;
     double x_mag = 0, y_mag = 0, z_mag = 0;
-//    char *x_mag = (char *)malloc(10);
-//    char *y_mag = (char *)malloc(10);
-//    char *z_mag = (char *)malloc(10);
 
     char *block = strtok(buf,"\r\n");
     char *token = strtok(buf, ","); // split into tokens
@@ -109,10 +98,6 @@ int split_packet(char *buf){
 
     // print the returned gesture (FOR DEMO ONLY)
     printf("Gesture: %d\n", gesture);
-
-//    free(x_mag);
-//    free(y_mag);
-//    free(z_mag);
 
     return 1;
 }
@@ -190,7 +175,7 @@ int main() {
     char *training_data_location = "../data/PreliminaryTrainingData.csv";
 
     printf("Getting training data...\n");
-    extract_data_multiple(training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_dimensions, training_data_location);
+    get_training_set(training_data, knn_info.number_of_points, knn_info.number_of_features, training_data_location);
 
     printf("Creating device...\n");
     files =  create_device();
