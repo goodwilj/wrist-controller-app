@@ -38,7 +38,7 @@ int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, in
     if (points[0].distance < threshold)
         gesture = determine_class(classes, numClasses);
 
-    printf("Gesture: %d\n", gesture);
+//    printf("Gesture: %d\n", gesture);
 
     return gesture;
 }
@@ -67,10 +67,10 @@ int determine_class(int * classes, int num){
 //////////////////////////////////// Helper Functions /////////////////////////////
 
 // Compare function for Point structs, used for qsort
-int compare(void *v1, void *v2){
+int compare(const void *v1, const void *v2){
 
-    Point *p1 = v1;
-    Point *p2 = v2;
+    const Point *p1 = v1;
+    const Point *p2 = v2;
 
     if(p1->distance > p2->distance) return 1;
     else if(p1->distance < p2->distance) return -1;
