@@ -30,4 +30,5 @@ int determine_class(int *, int);
 double minimum(double, double, double);
 Point dtw(RPoint, RPoint, int);
 int normalize(RPoint *, int);
+
 #endif //WRIST_CONTROLLER_APP_KNN_H
