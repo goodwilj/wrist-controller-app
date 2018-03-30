@@ -22,12 +22,12 @@ typedef struct raw_points{
     double data_z[21];
 } RPoint;
 
-int compare(void *, void *);
+int compare(const void *, const void *);
 int classify_knn(RPoint, RPoint *, int, int, int);
 int classify_knn_internal(RPoint, RPoint *, int, int, int, int);
 void calculate_frequencies(Point *, int *, int);
 int determine_class(int *, int);
 double minimum(double, double, double);
 Point dtw(RPoint, RPoint, int);
-
+int normalize(RPoint *, int);
 #endif //WRIST_CONTROLLER_APP_KNN_H

@@ -19,7 +19,7 @@ int classify_knn(RPoint r, RPoint * training_data, int numTrainingPoints, int nu
 int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, int numFeatures, int numClasses, int k){
 
     Point points[numTrainingPoints];
-    int classes[numClasses + 1], threshold = 10, gesture = -1;
+    int classes[numClasses + 1], threshold = 100, gesture = -1;
     size_t size_struct_points = sizeof(Point);
 
     for(int i = 0; i < numClasses + 1; i++)
@@ -31,14 +31,14 @@ int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, in
     qsort(points, (size_t)numTrainingPoints, size_struct_points, compare);
     calculate_frequencies(points, classes, k);
 
-//    for(int i = 0; i < k; i++) {
-//        printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
-//    }
+    for(int i = 0; i < k; i++) {
+        printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
+    }
 
     if (points[0].distance < threshold)
         gesture = determine_class(classes, numClasses);
 
-    printf("Gesture: %d\n", gesture);
+//    printf("Gesture: %d\n", gesture);
 
     return gesture;
 }
@@ -67,10 +67,10 @@ int determine_class(int * classes, int num){
 //////////////////////////////////// Helper Functions /////////////////////////////
 
 // Compare function for Point structs, used for qsort
-int compare(void *v1, void *v2){
+int compare(const void *v1, const void *v2){
 
-    Point *p1 = v1;
-    Point *p2 = v2;
+    const Point *p1 = v1;
+    const Point *p2 = v2;
 
     if(p1->distance > p2->distance) return 1;
     else if(p1->distance < p2->distance) return -1;
@@ -126,5 +126,26 @@ double minimum(double a, double b, double c){
     if(a < b && a < c) return a;
     else if(b < a && b < c) return b;
     else return c;
+}
+
+int normalize(RPoint * r, int numFeatures){
+
+    double max_x = -1000000, max_y = -1000000, max_z = -1000000 ;
+
+    for(int i = 0; i < numFeatures; i++){
+        if(r[0].data_x[i] > max_x)
+            max_x = r[0].data_x[i];
+        if(r[0].data_y[i] > max_y)
+            max_y = r[0].data_y[i];
+        if(r[0].data_z[i] > max_z)
+            max_z = r[0].data_z[i];
+    }
+
+    for(int i = 0; i < numFeatures; i++){
+        r[0].data_x[i] = r[0].data_x[i]/max_x;
+        r[0].data_y[i] = r[0].data_y[i]/max_y;
+        r[0].data_y[i] = r[0].data_y[i]/max_z;
+    }
+    return 0;
 }
 

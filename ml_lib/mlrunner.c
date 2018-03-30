@@ -24,7 +24,7 @@ int main(void)
     int correct = 0;
     int total = 0;
     int prediction = 0;
-    int numTrainingPoints = 23;
+    int numTrainingPoints = 18;
     int numTestPoints = 1;
     int numFeatures = 21;
     int numClasses  = 2;
@@ -32,9 +32,10 @@ int main(void)
 
     RPoint r[numTestPoints];
     RPoint training_data[numTrainingPoints];
-    get_training_set(r, numTestPoints, numFeatures, numDimensions, "../data/PreliminaryTestData.csv");
-    get_training_set(training_data, numTrainingPoints, numFeatures, numDimensions, "../data/PreliminaryTrainingData.csv");
+    get_training_set(r, numTestPoints, numFeatures, "../data/PreliminaryTestData.csv");
+    get_training_set(training_data, numTrainingPoints, numFeatures, "../data/PreliminaryTrainingData.csv");
     for(int i = 0; i < numTestPoints; i++){
+        normalize(r, numFeatures);
         prediction = classify_knn(r[i], training_data, numTrainingPoints, numFeatures, numClasses);
         total++;
         if(prediction == r[i].class){
