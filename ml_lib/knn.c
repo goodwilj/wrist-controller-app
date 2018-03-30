@@ -130,14 +130,14 @@ double minimum(double a, double b, double c){
 
 int normalize(RPoint * r, int numFeatures){
 
-    double max_x = -1000000, max_y = -1000000, max_z = -1000000 ;
+    double max_x = 0.0, max_y = 0.0, max_z = 0.0 ;
 
     for(int i = 0; i < numFeatures; i++){
-        if(r[0].data_x[i] > max_x)
+        if(fabs(r[0].data_x[i]) > max_x)
             max_x = r[0].data_x[i];
-        if(r[0].data_y[i] > max_y)
+        if(fabs(r[0].data_y[i]) > max_y)
             max_y = r[0].data_y[i];
-        if(r[0].data_z[i] > max_z)
+        if(fabs(r[0].data_z[i]) > max_z)
             max_z = r[0].data_z[i];
     }
 
