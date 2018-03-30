@@ -1,0 +1,19 @@
+#!/bin/bash
+
+bluetoothctl
+sleep 1
+power on
+remove 98:D3:31:FC:95:BD
+sleep 1
+scan on
+
+sleep 5
+
+scan off
+pair 98:D3:31:FC:95:BD
+sleep 1
+1234
+
+sleep 1
+
+exit

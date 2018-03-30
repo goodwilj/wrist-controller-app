@@ -8,7 +8,7 @@
 #include "ml_lib/knn.h"
 #include "ml_lib/csvParse.h"
 
-struct sample_info knn_info = { 21, 23, 3, 3, 0 };
+struct sample_info knn_info = { 21, 18, 3, 3, 0 };
 RPoint raw_point;
 RPoint training_data[23];
 
@@ -25,7 +25,7 @@ int process_for_knn(double x, double y, double z){
     raw_point.data_x[knn_info.count] = x;
     raw_point.data_y[knn_info.count] = y;
     raw_point.data_z[knn_info.count] = z;
-    int gesture;
+    int gesture = -1;
 
     if (knn_info.count++ == knn_info.number_of_features) {
         gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
