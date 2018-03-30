@@ -91,6 +91,8 @@ void get_training_set(RPoint * raw_points, int numPoints, int numReadings, char 
             token = strtok(NULL, ",");
         }
 
+//        normalize(&raw_points[i], 8);
+
         // last value of each line of CSV will be the class that data is labeled as
         int class = atoi(token);
         raw_points[i].class = class;
