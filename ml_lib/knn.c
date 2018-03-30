@@ -146,5 +146,6 @@ int normalize(RPoint * r, int numFeatures){
         r[0].data_y[i] = r[0].data_y[i]/max_y;
         r[0].data_y[i] = r[0].data_y[i]/max_z;
     }
+    return 0;
 }
 
