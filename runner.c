@@ -61,10 +61,6 @@ void update_coordinates(double x_deg, double y_deg){
     if (y_deg > 2 || y_deg < -2) x = (int) ((y_deg * 0.05) * 28);
     if (x_deg > 2 || x_deg < -2) y = (int) ((x_deg * 0.05) * 16);
 
-    // print coordinates of now
-//    printf("X: %f, ", x_deg);
-//    printf("Y: %f\n", y_deg);
-
     move_mouse(x, y, 1);
 }
 
