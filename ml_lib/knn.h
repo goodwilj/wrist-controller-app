@@ -22,7 +22,7 @@ typedef struct raw_points{
     double data_z[21];
 } RPoint;
 
-int compare(void *, void *);
+int compare(const void *, const void *);
 int classify_knn(RPoint, RPoint *, int, int, int);
 int classify_knn_internal(RPoint, RPoint *, int, int, int, int);
 void calculate_frequencies(Point *, int *, int);

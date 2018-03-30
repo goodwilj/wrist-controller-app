@@ -22,6 +22,8 @@ double get_double(const char *str) {
 
 int process_for_knn(double x, double y, double z){
 
+//    printf("%lf, %lf, %lf\n", x, y, z);
+
     raw_point.data_x[knn_info.count] = x;
     raw_point.data_y[knn_info.count] = y;
     raw_point.data_z[knn_info.count] = z;
