@@ -3,11 +3,16 @@
 #include <math.h>
 #include "knn.h"
 
+#define max(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
 ////////////////////////////////////// Main Algorithm Functions //////////////////////////////////
 
 // External function called to run algorithm
 int classify_knn(RPoint r, RPoint * training_data, int numTrainingPoints, int numFeatures, int numClasses){
-    int k = 15;
+    int k = 5;
     return classify_knn_internal(r,training_data, numTrainingPoints, numFeatures, numClasses, k);
 }
 
@@ -19,24 +24,21 @@ int classify_knn(RPoint r, RPoint * training_data, int numTrainingPoints, int nu
 int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, int numFeatures, int numClasses, int k){
 
     Point points[numTrainingPoints];
-    int classes[numClasses + 1], threshold = 100, gesture = -1;
+    int classes[numClasses + 1], gesture = -1;
     size_t size_struct_points = sizeof(Point);
 
     for(int i = 0; i < numClasses + 1; i++)
         classes[i] = 0;
 
     for(int i = 0; i < numTrainingPoints; i++)
-        points[i] = dtw(training[i], r, numFeatures);
+        points[i] = euclidean_distance(training[i], r, numFeatures);
 
     qsort(points, (size_t)numTrainingPoints, size_struct_points, compare);
     calculate_frequencies(points, classes, k);
 
-    for(int i = 0; i < k; i++) {
-        printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
-    }
+    printf("Points : (%d, %f)\n", points[0].class, points[0].distance);
 
-    if (points[0].distance < threshold)
-        gesture = determine_class(classes, numClasses);
+    gesture = determine_class(classes, numClasses);
 
 //    printf("Gesture: %d\n", gesture);
 
@@ -128,11 +130,40 @@ double minimum(double a, double b, double c){
     else return c;
 }
 
+Point euclidean_distance(RPoint r1, RPoint r2, int size){
+
+    Point p;
+
+    double squared_distance1 = 0.0;
+    double squared_distance2 = 0.0;
+    double squared_distance3 = 0.0;
+
+    double distance1;
+    double distance2;
+    double distance3;
+
+    for(int i = 0; i < size; i++){
+        squared_distance1 = squared_distance1 + pow((r1.data_x[i] - r2.data_x[i]), 2);
+        squared_distance2 = squared_distance2 + pow((r1.data_y[i] - r2.data_y[i]), 2);
+        squared_distance3 = squared_distance3 + pow((r1.data_z[i] - r2.data_z[i]), 2);
+    }
+
+    distance1 = sqrt(squared_distance1);
+    distance2 = sqrt(squared_distance2);
+    distance3 = sqrt(squared_distance3);
+
+    p.distance = distance1 + distance2 + distance3;
+    p.class = r1.class;
+
+    return p;
+}
+
 int normalize(RPoint * r, int numFeatures){
 
     double max_x = 0.0, max_y = 0.0, max_z = 0.0 ;
 
     for(int i = 0; i < numFeatures; i++){
+      
         if(fabs(r[0].data_x[i]) > max_x)
             max_x = r[0].data_x[i];
         if(fabs(r[0].data_y[i]) > max_y)

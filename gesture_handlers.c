@@ -125,10 +125,10 @@ int handle_gesture(int gesture){
 
     switch(gesture){
         case 1:
-            mouse_left_click();
+            mouse_hold();
             break;
         case 2:
-            mouse_right_click();
+            mouse_release();
             break;
         default:
             break;
@@ -138,7 +138,6 @@ int handle_gesture(int gesture){
 void mouse_left_click(){
     emit(fd_uinput, EV_KEY, BTN_LEFT, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
-    emit(fd_uinput, EV_KEY, BTN_LEFT, 0);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 

@@ -17,9 +17,9 @@ typedef struct points{
 
 typedef struct raw_points{
     int class;
-    double data_x[21];
-    double data_y[21];
-    double data_z[21];
+    double data_x[7];
+    double data_y[7];
+    double data_z[7];
 } RPoint;
 
 int compare(const void *, const void *);
@@ -28,6 +28,7 @@ int classify_knn_internal(RPoint, RPoint *, int, int, int, int);
 void calculate_frequencies(Point *, int *, int);
 int determine_class(int *, int);
 double minimum(double, double, double);
+Point euclidean_distance(RPoint, RPoint, int);
 Point dtw(RPoint, RPoint, int);
 int normalize(RPoint *, int);
 
