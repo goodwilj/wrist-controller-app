@@ -160,12 +160,16 @@ Point euclidean_distance(RPoint r1, RPoint r2, int size){
 
 int normalize(RPoint * r, int numFeatures){
 
-    double max_x = -1000000, max_y = -1000000, max_z = -1000000 ;
+    double max_x = 0.0, max_y = 0.0, max_z = 0.0 ;
 
     for(int i = 0; i < numFeatures; i++){
-        max_x = max(max_x, fabs(r[0].data_x[i]));
-        max_y = max(max_y, fabs(r[0].data_y[i]));
-        max_z = max(max_z, fabs(r[0].data_z[i]));
+      
+        if(fabs(r[0].data_x[i]) > max_x)
+            max_x = r[0].data_x[i];
+        if(fabs(r[0].data_y[i]) > max_y)
+            max_y = r[0].data_y[i];
+        if(fabs(r[0].data_z[i]) > max_z)
+            max_z = r[0].data_z[i];
     }
 
     for(int i = 0; i < numFeatures; i++){
