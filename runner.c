@@ -9,7 +9,7 @@
 #include "ml_lib/knn.h"
 #include "ml_lib/csvParse.h"
 
-struct sample_info knn_info = { 7, 32, 3, 3, 0 };
+struct sample_info knn_info = { 9, 21, 3, 3, 0 };
 
 int count = 0, ticks = 0, set = 1;
 double avg_x = 0, avg_y = 0, avg_z = 0;
@@ -31,12 +31,12 @@ int process_for_knn(double x, double y, double z){
     double abs_y = fabs(y);
     double abs_z = fabs(z);
 
-//    printf("%lf, %lf, %lf\n", abs_x, abs_y, abs_z);
+    printf("%lf, %lf, %lf\n", abs_x, abs_y, abs_z);
 
     raw_point.data_x[knn_info.count] = abs_x;
     raw_point.data_y[knn_info.count] = abs_y;
     raw_point.data_z[knn_info.count] = abs_z;
-    int gesture = -1;
+    int gesture = 0;
 
     if (knn_info.count++ == knn_info.number_of_features) {
         gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
@@ -48,9 +48,10 @@ int process_for_knn(double x, double y, double z){
             raw_point.data_y[i] = raw_point.data_y[i + 5];
             raw_point.data_z[i] = raw_point.data_z[i + 5];
         }
+        //printf("Gesture : %d\n", gesture);
     }
-
     return gesture;
+
 }
 
 void update_coordinates(double x_deg, double y_deg){
@@ -61,7 +62,7 @@ void update_coordinates(double x_deg, double y_deg){
     if (y_deg > 2 || y_deg < -2) x = (int) ((y_deg * 0.05) * 28);
     if (x_deg > 2 || x_deg < -2) y = (int) ((x_deg * 0.05) * 16);
 
-    move_mouse(x, y, 1);
+    //move_mouse(x, y, 1);
 }
 
 /**
@@ -100,15 +101,15 @@ int split_packet(char *buf){
     }
 
     // cancel out extra components caused by movement
-    if ((x_deg < 10 && x_deg > -10) && (y_deg < 10 && y_deg > -10)) {
-        if (ticks != 4)
+    if ((x_deg < 25 && x_deg > -25) && (y_deg < 25 && y_deg > -25)) {
+        if (ticks != 2)
             ticks++;
     } else {
         ticks = 0;
     }
 
     // if the device is stable
-    if (ticks == 4) {
+    if (ticks == 2) {
 
         if (set) {
             avg_x = x_mag;
@@ -118,7 +119,7 @@ int split_packet(char *buf){
         }
 
         int gesture = process_for_knn(x_mag - avg_x, y_mag - avg_y, z_mag - avg_z);
-        handle_gesture(gesture);
+        //handle_gesture(gesture);
     } else set = 1;
 
     update_coordinates(x_deg, y_deg);
@@ -127,6 +128,7 @@ int split_packet(char *buf){
 }
 
 /**
+    return gesture;
  * Process to handle tracking all mouse movements.
  * @param files: struct to keep track of used file pointers for select
  * @param data: pointer to array to store the coordinates
@@ -196,7 +198,7 @@ int main() {
     struct file_descriptors files;
     unsigned char data[3];
     char buf[40];
-    char *training_data_location = "../new_data/new_training_data.csv";
+    char *training_data_location = "../new_data/index_training_data.csv";
 
     printf("Getting training data...\n");
     get_training_set(training_data, knn_info.number_of_points, knn_info.number_of_features, training_data_location);
