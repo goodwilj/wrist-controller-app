@@ -23,6 +23,8 @@ void mouse_right_click();
 void center_cursor();
 void move_mouse(int x, int y, int ms);
 
+void scroll(int distance);
+
 int get_mouse_coordinates(unsigned char *buf);
 
 // Additional Events

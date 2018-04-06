@@ -93,6 +93,9 @@ struct file_descriptors create_device(){
     ioctl(fd_uinput, UI_SET_KEYBIT, KEY_RIGHTALT);
     ioctl(fd_uinput, UI_SET_KEYBIT, KEY_FN_F4);
 
+    ioctl(fd_uinput, UI_SET_EVBIT, EV_SYN);
+    ioctl(fd_uinput, UI_SET_RELBIT, REL_WHEEL);
+
     ioctl(fd_uinput, UI_SET_EVBIT, EV_REL);
     ioctl(fd_uinput, UI_SET_RELBIT, REL_X);
     ioctl(fd_uinput, UI_SET_RELBIT, REL_Y);
@@ -125,19 +128,27 @@ int handle_gesture(int gesture){
 
     switch(gesture){
         case 1:
-            mouse_hold();
+            mouse_right_click();
             break;
         case 2:
-            mouse_release();
+            mouse_left_click();
+            break;
+        case 3:
+//            close_window();
             break;
         default:
             break;
     }
 }
 
+void scroll(int distance){
+        emit(fd_uinput, EV_REL, REL_WHEEL, distance);
+}
+
 void mouse_left_click(){
     emit(fd_uinput, EV_KEY, BTN_LEFT, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, BTN_LEFT, 0);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 

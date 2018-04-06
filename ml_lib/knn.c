@@ -12,7 +12,7 @@
 
 // External function called to run algorithm
 int classify_knn(RPoint r, RPoint * training_data, int numTrainingPoints, int numFeatures, int numClasses){
-    int k = 2;
+    int k = 3;
     return classify_knn_internal(r,training_data, numTrainingPoints, numFeatures, numClasses, k);
 }
 
@@ -36,8 +36,8 @@ int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, in
     qsort(points, (size_t)numTrainingPoints, size_struct_points, compare);
     calculate_frequencies(points, classes, k);
 
-    for(int i = 0; i < 10; i++)
-        //printf("Points : (%d, %f)\n", points[i].class, points[i].distance);
+//    for(int i = 0; i < 10; i++)
+//        printf("Points : (%d, %f)\n", points[0].class, points[0].distance);
 
     gesture = determine_class(classes, numClasses);
 
