@@ -17,9 +17,9 @@ typedef struct points{
 
 typedef struct raw_points{
     int class;
-    double data_x[7];
-    double data_y[7];
-    double data_z[7];
+    double data_x[5];
+    double data_y[5];
+    double data_z[5];
 } RPoint;
 
 int compare(const void *, const void *);
