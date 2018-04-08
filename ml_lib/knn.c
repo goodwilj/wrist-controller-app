@@ -12,7 +12,7 @@
 
 // External function called to run algorithm
 int classify_knn(RPoint r, RPoint * training_data, int numTrainingPoints, int numFeatures, int numClasses){
-    int k = 3;
+    int k = 7;
     return classify_knn_internal(r,training_data, numTrainingPoints, numFeatures, numClasses, k);
 }
 
@@ -36,8 +36,9 @@ int classify_knn_internal(RPoint r, RPoint * training, int numTrainingPoints, in
     qsort(points, (size_t)numTrainingPoints, size_struct_points, compare);
     calculate_frequencies(points, classes, k);
 
-//    for(int i = 0; i < 10; i++)
-//        printf("Points : (%d, %f)\n", points[0].class, points[0].distance);
+    for(int i = 0; i < 5; i++)
+//        printf("%f %f %f\n", r.data_x[i], r.data_y[i], r.data_z[i]);
+//        printf("%d, %f\n", points[i].class, points[i].distance);
 
     gesture = determine_class(classes, numClasses);
 
@@ -143,7 +144,7 @@ Point euclidean_distance(RPoint r1, RPoint r2, int size){
     double distance2;
     double distance3;
 
-    for(int i = 0; i < size; i++){
+    for(int i = 1; i < size; i++){
         squared_distance1 = squared_distance1 + pow((r1.data_x[i] - r2.data_x[i]), 2);
         squared_distance2 = squared_distance2 + pow((r1.data_y[i] - r2.data_y[i]), 2);
         squared_distance3 = squared_distance3 + pow((r1.data_z[i] - r2.data_z[i]), 2);

@@ -9,14 +9,14 @@
 #include "ml_lib/knn.h"
 #include "ml_lib/csvParse.h"
 
-struct sample_info knn_info = { 5, 51, 3, 3, 0 };
+struct sample_info knn_info = { 5, 66, 5, 3, 0 };
 
 int count = 0, ticks = 0, set = 1;
 double avg_x = 0, avg_y = 0, avg_z = 0;
-int last_gesture = 0, delay = 0;
+int last_gesture = 0, delay = 0, gesture_count = 0;
 
 RPoint raw_point;
-RPoint training_data[50];
+RPoint training_data[66];
 
 double get_double(const char *str) {
 
@@ -43,14 +43,22 @@ int process_for_knn(double x, double y, double z){
     if (knn_info.count++ == knn_info.number_of_features) {
         gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
 
-        knn_info.count -= 3;
+        knn_info.count -= 5;
         int len = sizeof(raw_point.data_x)/sizeof(raw_point.data_x[0]);
-        for (int i = 0; i < len - 3; i++) {
-            raw_point.data_x[i] = raw_point.data_x[i + 3];
-            raw_point.data_y[i] = raw_point.data_y[i + 3];
-            raw_point.data_z[i] = raw_point.data_z[i + 3];
+//        for (int i = 0; i < len - 3; i++) {
+//            raw_point.data_x[i] = raw_point.data_x[i + 3];
+//            raw_point.data_y[i] = raw_point.data_y[i + 3];
+//            raw_point.data_z[i] = raw_point.data_z[i + 3];
+//        }
+
+        if(gesture == 0)
+            gesture_count = 0;
+        if(gesture != 0)
+            gesture_count++;
+        if(gesture_count == 2) {
+            printf("%d\n", gesture);
+            handle_gesture(gesture);
         }
-//        printf("%d\n", gesture);
     }
     return gesture;
 
@@ -106,7 +114,7 @@ int split_packet(char *buf){
     }
 
     // cancel out extra components caused by movement
-    int deg = 40;
+    int deg = 35;
     if ((x_deg < deg && x_deg > -deg) && (y_deg < deg && y_deg > -deg)) {
         if (ticks != 2)
             ticks++;
@@ -114,7 +122,7 @@ int split_packet(char *buf){
         ticks = 0;
     }
 
-    printf("%lf\n", z_accel);
+    //printf("%lf\n", z_accel);
 
     delay++;
 
@@ -130,7 +138,7 @@ int split_packet(char *buf){
 
         int gesture = process_for_knn(x_mag - avg_x, y_mag - avg_y, z_mag - avg_z);
 
-        if (last_gesture == 0 && gesture != 0)
+       // if (last_gesture == 0 && gesture != 0)
 //            handle_gesture(gesture);
 
         last_gesture = gesture;
@@ -139,7 +147,7 @@ int split_packet(char *buf){
 
     else {
 
-        if (z_accel > 10 && delay > 6) {
+        if (z_accel > 20 && delay > 6) {
             scroll((int) (-1 *  ((z_accel - 9) * 2)));
             avg_x = x_mag;
             avg_y = y_mag;
@@ -147,7 +155,7 @@ int split_packet(char *buf){
             delay = 0;
         }
 
-        else if (z_accel < 3 && delay > 6) {
+        else if (z_accel < -100 && delay > 6) {
             scroll((int) (-1 *  ((z_accel - 9) * 2)));
             avg_x = x_mag;
             avg_y = y_mag;

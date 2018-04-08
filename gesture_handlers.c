@@ -92,6 +92,7 @@ struct file_descriptors create_device(){
     ioctl(fd_uinput, UI_SET_KEYBIT, KEY_RIGHTCTRL);
     ioctl(fd_uinput, UI_SET_KEYBIT, KEY_RIGHTALT);
     ioctl(fd_uinput, UI_SET_KEYBIT, KEY_FN_F4);
+    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_FN_F10);
 
     ioctl(fd_uinput, UI_SET_EVBIT, EV_SYN);
     ioctl(fd_uinput, UI_SET_RELBIT, REL_WHEEL);
@@ -128,13 +129,17 @@ int handle_gesture(int gesture){
 
     switch(gesture){
         case 1:
-            mouse_right_click();
-            break;
-        case 2:
             mouse_left_click();
             break;
+        case 2:
+            mouse_right_click();
+            break;
         case 3:
-//            close_window();
+            close_window();
+            printf("Got it/n");
+            break;
+        case 4:
+            maximize_window();
             break;
         default:
             break;
@@ -188,11 +193,20 @@ void paste(){
 }
 
 void close_window(){
+    emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 1);
+    emit(fd_uinput, EV_KEY, KEY_FN_F4, 1);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
     emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 0);
     emit(fd_uinput, EV_KEY, KEY_FN_F4, 0);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+}
+
+void maximize_window(){
+    emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 0);
+    emit(fd_uinput, EV_KEY, KEY_FN_F10, 0);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
     emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 1);
-    emit(fd_uinput, EV_KEY, KEY_FN_F4, 1);
+    emit(fd_uinput, EV_KEY, KEY_FN_F10, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 

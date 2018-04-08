@@ -35,5 +35,6 @@ void copy();
 void paste();
 
 void close_window();
+void maximize_window();
 
 
