@@ -9,14 +9,14 @@
 #include "ml_lib/knn.h"
 #include "ml_lib/csvParse.h"
 
-struct sample_info knn_info = { 5, 66, 5, 3, 0 };
+struct sample_info knn_info = { 5, 51, 4, 3, 0 };
 
 int count = 0, ticks = 0, set = 1;
 double avg_x = 0, avg_y = 0, avg_z = 0;
-int delay = 0, gesture_count = 0;
+int delay = 0, gesture_count = 0, last_gesture = 0;
 
 RPoint raw_point;
-RPoint training_data[66];
+RPoint training_data[51];
 
 double get_double(const char *str) {
 
@@ -43,15 +43,18 @@ int process_for_knn(double x, double y, double z){
         knn_info.count -= 5;
 //        int len = sizeof(raw_point.data_x)/sizeof(raw_point.data_x[0]);
 
-        if(gesture == 0)
+        if(gesture == 0) {
             gesture_count = 0;
+        }
         if(gesture != 0)
             gesture_count++;
         if(gesture_count == 2) {
-            printf("%d\n", gesture);
+            printf("Count: %d\n",gesture_count);
             handle_gesture(gesture);
+            last_gesture = gesture;
         }
     }
+
     return gesture;
 }
 
@@ -61,7 +64,7 @@ void update_coordinates(double x_deg, double y_deg){
 
     // change in position = (degrees/second * seconds) * pixel multiplier
     if (y_deg > 2 || y_deg < -2) x = (int) ((y_deg * 0.05) * 28);
-    if (x_deg > 2 || x_deg < -2) y = (int) ((x_deg * 0.05) * 28);
+    if (x_deg > 2 || x_deg < -2) y = (int) ((x_deg * 0.05) * 35);
 
     move_mouse(x, y, 1);
 }
@@ -125,13 +128,19 @@ int split_packet(char *buf){
             set = 0;
         }
 
+        if (last_gesture == 0 && gesture_count > 1) {
+            avg_x = x_mag;
+            avg_y = y_mag;
+            avg_z = z_mag;
+        }
         process_for_knn(x_mag - avg_x, y_mag - avg_y, z_mag - avg_z);
         update_coordinates(x_deg, y_deg);
     }
 
     else {
 
-        if (z_accel > 20 && delay > 6) {
+        // scroll down
+        if (z_accel > 15 && delay > 6) {
             scroll((int) (-1 *  ((z_accel - 9) * 2)));
             avg_x = x_mag;
             avg_y = y_mag;
@@ -139,7 +148,8 @@ int split_packet(char *buf){
             delay = 0;
         }
 
-        else if (z_accel < -100 && delay > 6) {
+        // scroll up
+        else if (z_accel < 0 && delay > 6) {
             scroll((int) (-1 *  ((z_accel - 9) * 2)));
             avg_x = x_mag;
             avg_y = y_mag;

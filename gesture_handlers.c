@@ -138,7 +138,7 @@ int handle_gesture(int gesture){
             close_window();
             break;
         case 4:
-            maximize_window();
+//            maximize_window();
             break;
         default:
             break;
@@ -146,10 +146,12 @@ int handle_gesture(int gesture){
 }
 
 void scroll(int distance){
-        emit(fd_uinput, EV_REL, REL_WHEEL, distance);
+    printf("Scroll\n");
+    emit(fd_uinput, EV_REL, REL_WHEEL, distance);
 }
 
 void mouse_left_click(){
+    printf("Left click\n");
     emit(fd_uinput, EV_KEY, BTN_LEFT, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
     emit(fd_uinput, EV_KEY, BTN_LEFT, 0);
@@ -157,6 +159,7 @@ void mouse_left_click(){
 }
 
 void mouse_right_click(){
+    printf("Right click\n");
     emit(fd_uinput, EV_KEY, BTN_RIGHT, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
     emit(fd_uinput, EV_KEY, BTN_RIGHT, 0);
@@ -192,7 +195,7 @@ void paste(){
 }
 
 void close_window(){
-    printf("Pussy bitches\n");
+    printf("Close window\n");
     emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 1);
     emit(fd_uinput, EV_KEY, KEY_FN_F4, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
@@ -202,6 +205,7 @@ void close_window(){
 }
 
 void maximize_window(){
+    printf("Maximize window\n");
     emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 1);
     emit(fd_uinput, EV_KEY, KEY_FN_F10, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
