@@ -13,7 +13,7 @@ struct sample_info knn_info = { 5, 66, 5, 3, 0 };
 
 int count = 0, ticks = 0, set = 1;
 double avg_x = 0, avg_y = 0, avg_z = 0;
-int last_gesture = 0, delay = 0, gesture_count = 0;
+int delay = 0, gesture_count = 0;
 
 RPoint raw_point;
 RPoint training_data[66];
@@ -32,9 +32,6 @@ int process_for_knn(double x, double y, double z){
     double abs_y = fabs(y);
     double abs_z = fabs(z);
 
-//    printf("%lf, %lf, %lf\n", abs_x, abs_y, abs_z);
-//    printf("%lf\n",sqrt(x*x+y*y+z*z));
-
     raw_point.data_x[knn_info.count] = abs_x;
     raw_point.data_y[knn_info.count] = abs_y;
     raw_point.data_z[knn_info.count] = abs_z;
@@ -44,12 +41,7 @@ int process_for_knn(double x, double y, double z){
         gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
 
         knn_info.count -= 5;
-        int len = sizeof(raw_point.data_x)/sizeof(raw_point.data_x[0]);
-//        for (int i = 0; i < len - 3; i++) {
-//            raw_point.data_x[i] = raw_point.data_x[i + 3];
-//            raw_point.data_y[i] = raw_point.data_y[i + 3];
-//            raw_point.data_z[i] = raw_point.data_z[i + 3];
-//        }
+//        int len = sizeof(raw_point.data_x)/sizeof(raw_point.data_x[0]);
 
         if(gesture == 0)
             gesture_count = 0;
@@ -61,7 +53,6 @@ int process_for_knn(double x, double y, double z){
         }
     }
     return gesture;
-
 }
 
 void update_coordinates(double x_deg, double y_deg){
@@ -122,8 +113,6 @@ int split_packet(char *buf){
         ticks = 0;
     }
 
-    //printf("%lf\n", z_accel);
-
     delay++;
 
     // if the device is stable
@@ -136,12 +125,7 @@ int split_packet(char *buf){
             set = 0;
         }
 
-        int gesture = process_for_knn(x_mag - avg_x, y_mag - avg_y, z_mag - avg_z);
-
-       // if (last_gesture == 0 && gesture != 0)
-//            handle_gesture(gesture);
-
-        last_gesture = gesture;
+        process_for_knn(x_mag - avg_x, y_mag - avg_y, z_mag - avg_z);
         update_coordinates(x_deg, y_deg);
     }
 
@@ -191,7 +175,6 @@ void track_mouse(struct file_descriptors files, unsigned char *data){
     FD_SET(files.wr, &s_wr);
 
     while(1){
-
         if(select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) >= 0) {
             get_mouse_coordinates(data);
         }

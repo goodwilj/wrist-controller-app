@@ -136,7 +136,6 @@ int handle_gesture(int gesture){
             break;
         case 3:
             close_window();
-            printf("Got it/n");
             break;
         case 4:
             maximize_window();
@@ -193,6 +192,7 @@ void paste(){
 }
 
 void close_window(){
+    printf("Pussy bitches\n");
     emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 1);
     emit(fd_uinput, EV_KEY, KEY_FN_F4, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
@@ -202,11 +202,11 @@ void close_window(){
 }
 
 void maximize_window(){
-    emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 0);
-    emit(fd_uinput, EV_KEY, KEY_FN_F10, 0);
-    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
     emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 1);
     emit(fd_uinput, EV_KEY, KEY_FN_F10, 1);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
+    emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 0);
+    emit(fd_uinput, EV_KEY, KEY_FN_F10, 0);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
