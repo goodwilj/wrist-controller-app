@@ -14,6 +14,9 @@ struct sample_info knn_info = { 5, 51, 4, 3, 0 };
 int count = 0, ticks = 0, set = 1;
 double avg_x = 0, avg_y = 0, avg_z = 0;
 int delay = 0, gesture_count = 0, last_gesture = 0;
+int scroll_mode = 0;
+
+FILE *output;
 
 RPoint raw_point;
 RPoint training_data[51];
@@ -26,7 +29,7 @@ double get_double(const char *str) {
     return strtod(str, NULL);
 }
 
-int process_for_knn(double x, double y, double z){
+int process_for_knn(double x, double y, double z) {
 
     double abs_x = fabs(x);
     double abs_y = fabs(y);
@@ -41,16 +44,22 @@ int process_for_knn(double x, double y, double z){
         gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
 
         knn_info.count -= 5;
-//        int len = sizeof(raw_point.data_x)/sizeof(raw_point.data_x[0]);
 
-        if(gesture == 0) {
+        if(gesture == 0)
             gesture_count = 0;
-        }
         if(gesture != 0)
             gesture_count++;
         if(gesture_count == 2) {
-            printf("Count: %d\n",gesture_count);
-            handle_gesture(gesture);
+
+            // write to file to read by GUI
+            output = fopen("current_gesture.txt", "wb");
+            fprintf(output, "%d", gesture);
+            fclose(output);
+
+            if (!scroll_mode)
+                handle_gesture(gesture);
+            if (gesture == 3)
+                scroll_mode = !scroll_mode;
             last_gesture = gesture;
         }
     }
@@ -69,6 +78,14 @@ void update_coordinates(double x_deg, double y_deg){
     move_mouse(x, y, 1);
 }
 
+void update_scroll(double x_deg){
+
+    int y = 0;
+    y = (int) ((x_deg * 0.05) * 2);
+
+    scroll(-y);
+}
+
 /**
  * Split the gyroscope data into x and y coordinates
  * @param buf contains the data.
@@ -78,7 +95,7 @@ int split_packet(char *buf){
 
     double x_deg = 0, y_deg = 0;
     double x_mag = 0, y_mag = 0, z_mag = 0;
-    double x_accel = 0, z_accel = 0;
+    double z_accel = 0;
 
     char *block = strtok(buf,"\r\n");
     char *token = strtok(buf, ","); // split into tokens
@@ -133,35 +150,23 @@ int split_packet(char *buf){
             avg_y = y_mag;
             avg_z = z_mag;
         }
+
         process_for_knn(x_mag - avg_x, y_mag - avg_y, z_mag - avg_z);
-        update_coordinates(x_deg, y_deg);
+
+        if (!scroll_mode)
+            update_coordinates(x_deg, y_deg);
+        else
+            update_scroll(x_deg);
     }
 
     else {
 
-        // scroll down
-        if (z_accel > 15 && delay > 6) {
-            scroll((int) (-1 *  ((z_accel - 9) * 2)));
-            avg_x = x_mag;
-            avg_y = y_mag;
-            avg_z = z_mag;
-            delay = 0;
-        }
-
-        // scroll up
-        else if (z_accel < 0 && delay > 6) {
-            scroll((int) (-1 *  ((z_accel - 9) * 2)));
-            avg_x = x_mag;
-            avg_y = y_mag;
-            avg_z = z_mag;
-            delay = 0;
-        }
-
-        else if (delay > 6) {
-            update_coordinates(x_deg, y_deg);
-        };
-
         set = 1;
+
+        if (!scroll_mode)
+            update_coordinates(x_deg, y_deg);
+        else
+            update_scroll(x_deg);
     }
 
     return 1;

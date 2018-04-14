@@ -89,10 +89,7 @@ struct file_descriptors create_device(){
     ioctl(fd_uinput, UI_SET_KEYBIT, BTN_RIGHT);
     ioctl(fd_uinput, UI_SET_KEYBIT, KEY_C);
     ioctl(fd_uinput, UI_SET_KEYBIT, KEY_P);
-    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_RIGHTCTRL);
-    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_RIGHTALT);
-    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_FN_F4);
-    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_FN_F10);
+    ioctl(fd_uinput, UI_SET_KEYBIT, KEY_WWW);
 
     ioctl(fd_uinput, UI_SET_EVBIT, EV_SYN);
     ioctl(fd_uinput, UI_SET_RELBIT, REL_WHEEL);
@@ -134,24 +131,19 @@ int handle_gesture(int gesture){
         case 2:
             mouse_right_click();
             break;
-        case 3:
-            close_window();
-            break;
-        case 4:
-//            maximize_window();
-            break;
         default:
             break;
     }
 }
 
 void scroll(int distance){
-    printf("Scroll\n");
+//    printf("Scroll\n");
     emit(fd_uinput, EV_REL, REL_WHEEL, distance);
+    emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
 void mouse_left_click(){
-    printf("Left click\n");
+//    printf("Left click\n");
     emit(fd_uinput, EV_KEY, BTN_LEFT, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
     emit(fd_uinput, EV_KEY, BTN_LEFT, 0);
@@ -159,7 +151,7 @@ void mouse_left_click(){
 }
 
 void mouse_right_click(){
-    printf("Right click\n");
+//    printf("Right click\n");
     emit(fd_uinput, EV_KEY, BTN_RIGHT, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
     emit(fd_uinput, EV_KEY, BTN_RIGHT, 0);
@@ -204,13 +196,11 @@ void close_window(){
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
-void maximize_window(){
-    printf("Maximize window\n");
-    emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 1);
-    emit(fd_uinput, EV_KEY, KEY_FN_F10, 1);
+void open_browser(){
+    printf("Expand window\n");
+    emit(fd_uinput, EV_KEY, KEY_WWW, 1);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
-    emit(fd_uinput, EV_KEY, KEY_RIGHTALT, 0);
-    emit(fd_uinput, EV_KEY, KEY_FN_F10, 0);
+    emit(fd_uinput, EV_KEY, KEY_WWW, 0);
     emit(fd_uinput, EV_SYN, SYN_REPORT, 0);
 }
 
