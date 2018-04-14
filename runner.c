@@ -45,22 +45,30 @@ int process_for_knn(double x, double y, double z) {
 
         knn_info.count -= 5;
 
-        if(gesture == 0)
+        // write to file to read by GUI
+        output = fopen("current_gesture.txt", "wb");
+
+        if(gesture == 0) {
+            fprintf(output, "%d", gesture);
             gesture_count = 0;
+        }
         if(gesture != 0)
             gesture_count++;
         if(gesture_count == 2) {
 
-            // write to file to read by GUI
-            output = fopen("current_gesture.txt", "wb");
-            fprintf(output, "%d", gesture);
-            fclose(output);
-
-            if (!scroll_mode)
+            if (!scroll_mode) {
                 handle_gesture(gesture);
+                fprintf(output, "%d", gesture);
+            }
+
+            if ((scroll_mode && gesture == 3))
+                fprintf(output, "4");
+
             if (gesture == 3)
                 scroll_mode = !scroll_mode;
+
             last_gesture = gesture;
+            fclose(output);
         }
     }
 
