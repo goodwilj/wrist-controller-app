@@ -9,14 +9,17 @@
 #include "ml_lib/knn.h"
 #include "ml_lib/csvParse.h"
 
-struct sample_info knn_info = { 5, 51, 3, 3, 0 };
+struct sample_info knn_info = { 5, 51, 4, 3, 0 };
 
 int count = 0, ticks = 0, set = 1;
 double avg_x = 0, avg_y = 0, avg_z = 0;
-int last_gesture = 0, delay = 0;
+int delay = 0, gesture_count = 0, last_gesture = 0;
+int scroll_mode = 0;
+
+FILE *output;
 
 RPoint raw_point;
-RPoint training_data[50];
+RPoint training_data[51];
 
 double get_double(const char *str) {
 
@@ -26,14 +29,11 @@ double get_double(const char *str) {
     return strtod(str, NULL);
 }
 
-int process_for_knn(double x, double y, double z){
+int process_for_knn(double x, double y, double z) {
 
     double abs_x = fabs(x);
     double abs_y = fabs(y);
     double abs_z = fabs(z);
-
-//    printf("%lf, %lf, %lf\n", abs_x, abs_y, abs_z);
-//    printf("%lf\n",sqrt(x*x+y*y+z*z));
 
     raw_point.data_x[knn_info.count] = abs_x;
     raw_point.data_y[knn_info.count] = abs_y;
@@ -43,17 +43,28 @@ int process_for_knn(double x, double y, double z){
     if (knn_info.count++ == knn_info.number_of_features) {
         gesture = classify_knn(raw_point, training_data, knn_info.number_of_points, knn_info.number_of_features, knn_info.number_of_classes);
 
-        knn_info.count -= 3;
-        int len = sizeof(raw_point.data_x)/sizeof(raw_point.data_x[0]);
-        for (int i = 0; i < len - 3; i++) {
-            raw_point.data_x[i] = raw_point.data_x[i + 3];
-            raw_point.data_y[i] = raw_point.data_y[i + 3];
-            raw_point.data_z[i] = raw_point.data_z[i + 3];
-        }
-//        printf("%d\n", gesture);
-    }
-    return gesture;
+        knn_info.count -= 5;
 
+        if(gesture == 0)
+            gesture_count = 0;
+        if(gesture != 0)
+            gesture_count++;
+        if(gesture_count == 2) {
+
+            // write to file to read by GUI
+            output = fopen("current_gesture.txt", "wb");
+            fprintf(output, "%d", gesture);
+            fclose(output);
+
+            if (!scroll_mode)
+                handle_gesture(gesture);
+            if (gesture == 3)
+                scroll_mode = !scroll_mode;
+            last_gesture = gesture;
+        }
+    }
+
+    return gesture;
 }
 
 void update_coordinates(double x_deg, double y_deg){
@@ -62,9 +73,17 @@ void update_coordinates(double x_deg, double y_deg){
 
     // change in position = (degrees/second * seconds) * pixel multiplier
     if (y_deg > 2 || y_deg < -2) x = (int) ((y_deg * 0.05) * 28);
-    if (x_deg > 2 || x_deg < -2) y = (int) ((x_deg * 0.05) * 28);
+    if (x_deg > 2 || x_deg < -2) y = (int) ((x_deg * 0.05) * 35);
 
     move_mouse(x, y, 1);
+}
+
+void update_scroll(double x_deg){
+
+    int y = 0;
+    y = (int) ((x_deg * 0.05) * 2);
+
+    scroll(-y);
 }
 
 /**
@@ -76,7 +95,7 @@ int split_packet(char *buf){
 
     double x_deg = 0, y_deg = 0;
     double x_mag = 0, y_mag = 0, z_mag = 0;
-    double x_accel = 0, z_accel = 0;
+    double z_accel = 0;
 
     char *block = strtok(buf,"\r\n");
     char *token = strtok(buf, ","); // split into tokens
@@ -106,15 +125,13 @@ int split_packet(char *buf){
     }
 
     // cancel out extra components caused by movement
-    int deg = 40;
+    int deg = 35;
     if ((x_deg < deg && x_deg > -deg) && (y_deg < deg && y_deg > -deg)) {
         if (ticks != 2)
             ticks++;
     } else {
         ticks = 0;
     }
-
-    printf("%lf\n", z_accel);
 
     delay++;
 
@@ -128,38 +145,28 @@ int split_packet(char *buf){
             set = 0;
         }
 
-        int gesture = process_for_knn(x_mag - avg_x, y_mag - avg_y, z_mag - avg_z);
+        if (last_gesture == 0 && gesture_count > 1) {
+            avg_x = x_mag;
+            avg_y = y_mag;
+            avg_z = z_mag;
+        }
 
-        if (last_gesture == 0 && gesture != 0)
-//            handle_gesture(gesture);
+        process_for_knn(x_mag - avg_x, y_mag - avg_y, z_mag - avg_z);
 
-        last_gesture = gesture;
-        update_coordinates(x_deg, y_deg);
+        if (!scroll_mode)
+            update_coordinates(x_deg, y_deg);
+        else
+            update_scroll(x_deg);
     }
 
     else {
 
-        if (z_accel > 10 && delay > 6) {
-            scroll((int) (-1 *  ((z_accel - 9) * 2)));
-            avg_x = x_mag;
-            avg_y = y_mag;
-            avg_z = z_mag;
-            delay = 0;
-        }
-
-        else if (z_accel < 3 && delay > 6) {
-            scroll((int) (-1 *  ((z_accel - 9) * 2)));
-            avg_x = x_mag;
-            avg_y = y_mag;
-            avg_z = z_mag;
-            delay = 0;
-        }
-
-        else if (delay > 6) {
-            update_coordinates(x_deg, y_deg);
-        };
-
         set = 1;
+
+        if (!scroll_mode)
+            update_coordinates(x_deg, y_deg);
+        else
+            update_scroll(x_deg);
     }
 
     return 1;
@@ -183,7 +190,6 @@ void track_mouse(struct file_descriptors files, unsigned char *data){
     FD_SET(files.wr, &s_wr);
 
     while(1){
-
         if(select(files.max + 1, &s_rd, &s_wr, &s_ex, NULL) >= 0) {
             get_mouse_coordinates(data);
         }

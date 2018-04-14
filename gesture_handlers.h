@@ -24,6 +24,7 @@ void center_cursor();
 void move_mouse(int x, int y, int ms);
 
 void scroll(int distance);
+void open_browser();
 
 int get_mouse_coordinates(unsigned char *buf);
 
@@ -35,5 +36,6 @@ void copy();
 void paste();
 
 void close_window();
+void maximize_window();
 
 
